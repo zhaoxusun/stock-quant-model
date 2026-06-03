@@ -11,7 +11,7 @@ from functools import wraps
 
 from flask import request, make_response, jsonify
 
-from common.logger import create_log
+from logger import create_log
 from ml.model_api_config import (
     ANTI_CHEAT_ENABLED,
     RATE_LIMIT,
