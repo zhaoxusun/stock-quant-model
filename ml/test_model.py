@@ -86,7 +86,7 @@ def _fetch_kline_live(code, client_ip=None):
         if df is None or df.empty:
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
-        return df, code, name, f"baostock 实时 ({start_date} ~ {end_date})"
+        return df, code, name, f"baostock ({start_date} ~ {end_date})"
 
     if prefix == "HK":
         from stock.manager_akshare import get_hk_stock_history
@@ -95,7 +95,7 @@ def _fetch_kline_live(code, client_ip=None):
         if df is None or df.empty:
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
-        return df, code, name, f"akshare 实时 ({start_date} ~ {end_date})"
+        return df, code, name, f"akshare ({start_date} ~ {end_date})"
 
     if prefix == "US":
         from stock.manager_akshare import get_us_history
@@ -104,7 +104,7 @@ def _fetch_kline_live(code, client_ip=None):
         if df is None or df.empty:
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
-        return df, code, name, f"akshare 实时 ({start_date} ~ {end_date})"
+        return df, code, name, f"akshare ({start_date} ~ {end_date})"
 
     return None
 

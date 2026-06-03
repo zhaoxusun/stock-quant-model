@@ -3,26 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>关于 · Quant AI Signal</title>
+<title data-i18n="title">关于 · Quant AI Signal</title>
 <style>
-body { font-family: -apple-system, 'Segoe UI', monospace; background: #0a0e17; color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.8; }
-h1 { color: #00d4ff; }
-h2 { color: #00ff88; font-size: 1.1rem; margin-top: 28px; }
-p, li { color: rgba(200,220,255,0.75); font-size: 0.9rem; }
-a { color: #00d4ff; }
+:root { --accent-cyan: #00d4ff; --accent-green: #00ff88; --text-body: rgba(200,220,255,0.75); --text-dim: rgba(200,220,255,0.4); --bg: #0a0e17; }
+body { font-family: -apple-system,'Segoe UI',monospace; background: var(--bg); color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.8; }
+h1 { color: var(--accent-cyan); }
+h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 28px; }
+p, li { color: var(--text-body); font-size: 0.9rem; }
+a { color: var(--accent-cyan); }
+.lang-btn {
+  position: fixed; top: 10px; right: 14px; z-index: 200;
+  background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.25);
+  color: var(--accent-cyan); padding: 4px 14px; border-radius: 6px;
+  cursor: pointer; font-size: 0.78rem; font-family: var(--font-body,monospace);
+  transition: 0.2s;
+}
+.lang-btn:hover { background: rgba(0,180,255,0.2); }
 </style>
 </head>
 <body>
-<h1>关于本站</h1>
-<p>Quant AI Signal 是一个基于 XGBoost 多标签分类的量化信号分析工具。</p>
+<button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
+<h1 data-i18n="h1">关于本站</h1>
+<p data-i18n="intro">Quant AI Signal 是一个基于 XGBoost 多标签分类的量化信号分析工具。</p>
 
-<h2>技术原理</h2>
-<p>通过 XGBoost 模型对 A 股、港股、美股的历史量价数据进行多标签分类训练，输出 4 路交易信号：买入、卖出、强买入、强卖出。模型基于特征工程（成交量变化、价格动量、波动率等）生成预测概率，辅助投资者进行技术分析参考。</p>
+<h2 data-i18n="tech_h">技术原理</h2>
+<p data-i18n="tech_p">通过 XGBoost 模型对 A 股、港股、美股的历史量价数据进行多标签分类训练，输出 4 路交易信号：买入、卖出、强买入、强卖出。模型基于特征工程（成交量变化、价格动量、波动率等）生成预测概率，辅助投资者进行技术分析参考。</p>
 
-<h2>数据来源</h2>
-<p>SH/SZ：baostock | HK/US：akshare | 部分历史回测数据来源于 CSV 文件</p>
+<h2 data-i18n="source_h">数据来源</h2>
+<p data-i18n="source_p">SH/SZ：baostock | HK/US：akshare | 部分历史回测数据来源于 CSV 文件</p>
 
-<h2>免责声明</h2>
-<p>本工具仅供学习研究使用。所有输出信号均为模型推断结果，不构成任何投资建议。过往表现不代表未来收益。投资有风险，入市需谨慎。</p>
+<h2 data-i18n="disclaimer_h">免责声明</h2>
+<p data-i18n="disclaimer_p">本工具仅供学习研究使用。所有输出信号均为模型推断结果，不构成任何投资建议。过往表现不代表未来收益。投资有风险，入市需谨慎。</p>
+
+<script>
+const LANG = {
+  zh: {
+    title: '关于 · Quant AI Signal',
+    h1: '关于本站',
+    intro: 'Quant AI Signal 是一个基于 XGBoost 多标签分类的量化信号分析工具。',
+    tech_h: '技术原理',
+    tech_p: '通过 XGBoost 模型对 A 股、港股、美股的历史量价数据进行多标签分类训练，输出 4 路交易信号：买入、卖出、强买入、强卖出。模型基于特征工程（成交量变化、价格动量、波动率等）生成预测概率，辅助投资者进行技术分析参考。',
+    source_h: '数据来源',
+    source_p: 'SH/SZ：baostock | HK/US：akshare | 部分历史回测数据来源于 CSV 文件',
+    disclaimer_h: '免责声明',
+    disclaimer_p: '本工具仅供学习研究使用。所有输出信号均为模型推断结果，不构成任何投资建议。过往表现不代表未来收益。投资有风险，入市需谨慎。',
+  },
+  en: {
+    title: 'About · Quant AI Signal',
+    h1: 'About',
+    intro: 'Quant AI Signal is a quantitative signal analysis tool based on XGBoost multi-label classification.',
+    tech_h: 'How It Works',
+    tech_p: 'An XGBoost model is trained on historical price & volume data from A-shares, Hong Kong, and US stocks to output 4 trading signals: Buy, Sell, Strong Buy, Strong Sell. Feature engineering (volume change, price momentum, volatility, etc.) generates prediction probabilities for technical analysis reference.',
+    source_h: 'Data Sources',
+    source_p: 'SH/SZ: baostock | HK/US: akshare | Some historical backtest data from CSV files',
+    disclaimer_h: 'Disclaimer',
+    disclaimer_p: 'This tool is for educational and research purposes only. All output signals are model inferences and do not constitute investment advice. Past performance does not guarantee future results. Trade at your own risk.',
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'zh';
+function t(key) {
+  const v = LANG[currentLang] ? LANG[currentLang][key] : LANG['zh'][key];
+  return typeof v === 'function' ? v : (v || key);
+}
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
+}
+function switchLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', currentLang);
+  translatePage();
+}
+translatePage();
+</script>
 </body>
 </html>
