@@ -657,6 +657,9 @@
 </div>
 
 <script>
+// ── API 基地址（开发留空，生产填 Render 地址）──
+const API_BASE = '';
+
 const sigTypes = ['normal_buy', 'normal_sell', 'strong_buy', 'strong_sell'];
 const sigLabels = {
   normal_buy: '普通买入', normal_sell: '普通卖出',
@@ -697,7 +700,7 @@ async function doSearch() {
   hideResults();
 
   try {
-    const resp = await fetch('/api/predict', {
+    const resp = await fetch(API_BASE + '/api/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
