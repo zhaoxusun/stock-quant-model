@@ -727,8 +727,8 @@ const LANG = {
     no_signal_trigger: '无信号触发',
     signal: '信号',
     none: '无',
-    badge_has: (d) => `⚠ 近${d}天有信号`,
-    badge_none: '✅ 近一周无信号',
+    badge_has: (d) => `⚠ 本周 ${d} 天有信号`,
+    badge_none: '✅ 本周无信号',
     week_range: (s, e) => `近一周 ${s} ~ ${e}`,
     latest_day: (d) => `最新交易日: ${d}`,
     code_error: '格式错误，请输入 SH.xxxx、SZ.xxxx、HK.xxxx 或 US.xxxx（如 SH.600519 HK.00700 US.AAPL）',
@@ -786,7 +786,7 @@ const LANG = {
     no_signal_trigger: 'No Signal',
     signal: 'Signal',
     none: 'None',
-    badge_has: (d) => `⚠ Signal in last ${d}d`,
+    badge_has: (d) => `⚠ ${d} signal days this week`,
     badge_none: '✅ No signal this week',
     week_range: (s, e) => `Last week ${s} ~ ${e}`,
     latest_day: (d) => `Latest: ${d}`,
@@ -893,6 +893,7 @@ function renderResults(data) {
     badge.className = 'signal-badge has-signal';
     badge.textContent = t('badge_has')(rw.total_signal_days);
   } else {
+    badge.className = 'signal-badge no-signal';
     badge.textContent = t('badge_none');
   }
   document.getElementById('latestDate').textContent = rw
