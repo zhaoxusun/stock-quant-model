@@ -8,7 +8,7 @@ from pandas import DataFrame
 
 from logger import create_log
 from settings import stock_data_root
-from stock.manager_common import standardize_stock_data
+from stock.utils import standardize_stock_data
 from util_csv import save_to_csv
 
 logger = create_log('manage_akshare')
