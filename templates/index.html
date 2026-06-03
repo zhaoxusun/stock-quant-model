@@ -652,12 +652,16 @@
   </div>
 
   <footer>
-    Quant AI Signal Engine &mdash; XGBoost Multi-Label Classifier
+    <div style="margin-bottom:8px;">Quant AI Signal Engine &mdash; XGBoost Multi-Label Classifier</div>
+    <div style="font-size:0.75rem;color:rgba(200,220,255,0.35);display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="/privacy" style="color:inherit;">隐私政策</a>
+      <a href="/about" style="color:inherit;">关于本站</a>
+    </div>
   </footer>
 </div>
 
 <script>
-// ── API 基地址（开发留空，生产填 Render 地址）──
+// ── API 基地址（Vercel/本地同域部署留空即可）──
 const API_BASE = '';
 
 const sigTypes = ['normal_buy', 'normal_sell', 'strong_buy', 'strong_sell'];
@@ -1292,5 +1296,14 @@ window.addEventListener('resize', () => {
   if (klineChartInstance) klineChartInstance.resize();
 });
 </script>
+<!-- Default Statcounter code for quant-test.top -->
+<script type="text/javascript">
+var sc_project=13272736;
+var sc_invisible=1;
+var sc_security="8327ecff";
+</script>
+<script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
+<noscript><div class="statcounter"><a title="site stats" href="https://statcounter.com/" target="_blank"><img class="statcounter" src="https://c.statcounter.com/13272736/0/8327ecff/1/" alt="site stats" referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+<!-- End of Statcounter Code -->
 </body>
 </html>
