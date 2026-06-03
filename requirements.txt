@@ -11,3 +11,4 @@ baostock
 backtrader
 flask
 flask-cors
+gunicorn
