@@ -1,10 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "{ml/test_model.py,ml/train.py,stock/utils.py,util_csv.py,templates/**,.python-version,.vercelignore,**/__pycache__/**}"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
