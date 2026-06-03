@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于 · Quant AI Signal</title>
+<style>
+body { font-family: -apple-system, 'Segoe UI', monospace; background: #0a0e17; color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.8; }
+h1 { color: #00d4ff; }
+h2 { color: #00ff88; font-size: 1.1rem; margin-top: 28px; }
+p, li { color: rgba(200,220,255,0.75); font-size: 0.9rem; }
+a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>关于本站</h1>
+<p>Quant AI Signal 是一个基于 XGBoost 多标签分类的量化信号分析工具。</p>
+
+<h2>技术原理</h2>
+<p>通过 XGBoost 模型对 A 股、港股、美股的历史量价数据进行多标签分类训练，输出 4 路交易信号：买入、卖出、强买入、强卖出。模型基于特征工程（成交量变化、价格动量、波动率等）生成预测概率，辅助投资者进行技术分析参考。</p>
+
+<h2>数据来源</h2>
+<p>SH/SZ：baostock | HK/US：akshare | 部分历史回测数据来源于 CSV 文件</p>
+
+<h2>免责声明</h2>
+<p>本工具仅供学习研究使用。所有输出信号均为模型推断结果，不构成任何投资建议。过往表现不代表未来收益。投资有风险，入市需谨慎。</p>
+</body>
+</html>
