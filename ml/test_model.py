@@ -4,16 +4,9 @@ import time
 from datetime import datetime, timedelta
 
 import pandas as pd
-from tabulate import tabulate
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _PROJECT_ROOT)
-
-import tabulate as _tab
-import wcwidth
-_tab.wcwidth = wcwidth
-_tab.WIDE_CHARS_MODE = True
-from tabulate import tabulate
 
 from ml.predict import predict, predict_signals_with_details
 from ml.api_rate_limiter import get_rate_limiter, RateLimitError
@@ -31,6 +24,7 @@ sig_labels = {"normal_buy": "普通买(normal_buy)", "normal_sell": "普通卖(n
 
 
 def _fmt_tbl(data, headers, aligns, showindex=False):
+    from tabulate import tabulate
     return tabulate(
         data, headers=headers, tablefmt=_TABFMT, showindex=showindex,
         disable_numparse=True,
@@ -434,6 +428,11 @@ def _read_kline(fpath):
 
 
 if __name__ == "__main__":
+    import tabulate as _tab
+    import wcwidth
+    _tab.wcwidth = wcwidth
+    _tab.WIDE_CHARS_MODE = True
+
     strategy = "EnhancedVolumeStrategy"
     code = "HK.03968"
 
