@@ -18,9 +18,11 @@ from tabulate import tabulate
 from ml.predict import predict, predict_signals_with_details
 from ml.api_rate_limiter import get_rate_limiter, RateLimitError
 from settings import ENABLE_API_RATE_LIMIT
+from logger import create_log
+
+logger = create_log("test_model")
 
 _RAW_DIR = os.path.join(_PROJECT_ROOT, "ml", "data", "raw", "futu")
-_SEP = "\n" + "=" * 72
 _TABFMT = "fancy_grid"
 
 sig_types = ["normal_buy", "normal_sell", "strong_buy", "strong_sell"]
@@ -76,14 +78,12 @@ def _fetch_kline_live(code, client_ip=None):
         from stock.manager_baostock import get_stock_history, init_baostock
         import baostock as bs
         if not init_baostock():
-            print("  ❌ Baostock 连接失败")
             return None
         try:
             df = get_stock_history(code, start_date, end_date)
         finally:
             bs.logout()
         if df is None or df.empty:
-            print(f"  ❌ {code} Baostock 实时获取失败")
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
         return df, code, name, f"baostock 实时 ({start_date} ~ {end_date})"
@@ -93,7 +93,6 @@ def _fetch_kline_live(code, client_ip=None):
         raw = code[len("HK."):]
         df = get_hk_stock_history(raw, start_date, end_date)
         if df is None or df.empty:
-            print(f"  ❌ {code} akshare 实时获取失败")
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
         return df, code, name, f"akshare 实时 ({start_date} ~ {end_date})"
@@ -103,7 +102,6 @@ def _fetch_kline_live(code, client_ip=None):
         raw = code[len("US."):]
         df = get_us_history(raw, start_date, end_date)
         if df is None or df.empty:
-            print(f"  ❌ {code} akshare 实时获取失败")
             return None
         name = df["stock_name"].iloc[0] if "stock_name" in df.columns else code
         return df, code, name, f"akshare 实时 ({start_date} ~ {end_date})"
@@ -113,10 +111,6 @@ def _fetch_kline_live(code, client_ip=None):
 
 def test_single_stock(code, strategy_name="EnhancedVolumeStrategy", client_ip=None):
     """单只股票推理——4 路信号独立统计, 返回 dict 供 API 使用"""
-    print(f"{_SEP}")
-    print(f"  {strategy_name} — 单只股票推理")
-    print(f"{_SEP}")
-
     live = _fetch_kline_live(code, client_ip=client_ip)
 
     if live is not None:
@@ -125,7 +119,6 @@ def test_single_stock(code, strategy_name="EnhancedVolumeStrategy", client_ip=No
     else:
         fpath = _pick_longest_csv(code)
         if fpath is None:
-            print(f"  ❌ {code} K 线文件不存在")
             return
         kline = _read_kline(fpath)
         basename = os.path.basename(fpath).replace(".csv", "")
@@ -145,24 +138,9 @@ def test_single_stock(code, strategy_name="EnhancedVolumeStrategy", client_ip=No
     counts = {t: int(details[t].sum()) for t in sig_types}
     total_signal_days = int((details[sig_types].sum(axis=1) > 0).sum())
 
-    print(f"  数据源:   {data_source}")
-    print(f"  行数:     {n}")
-    print(f"  推理耗时: {ms_total:.0f} ms（{ms_per:.2f} ms/行）")
-    print(f"  有信号日: {total_signal_days} 天\n")
-
-    rows = [[sig_labels[t], str(counts[t])] for t in sig_types]
-    rows.append(["─── 合计 ───", str(sum(counts.values()))])
-    print(_fmt_tbl(rows, ["信号类型", "天数"], ("left", "right")))
-
     signal_details = []
     if total_signal_days:
-        print(f"\n  {data_source} 各信号日状态:")
         active = details[details[sig_types].sum(axis=1) > 0]
-        show = active[["date"] + sig_types].copy()
-        show["date"] = show["date"].dt.strftime("%Y-%m-%d")
-        show.columns = ["date"] + [sig_labels[t] for t in sig_types]
-        print(_fmt_tbl(show, "keys", ("left",) + ("right",) * 4))
-
         for _, row in active.iterrows():
             entry = {"date": row["date"].strftime("%Y-%m-%d")}
             for st in sig_types:
@@ -240,13 +218,11 @@ def test_single_stock(code, strategy_name="EnhancedVolumeStrategy", client_ip=No
 
 def test_batch(strategy_name="EnhancedVolumeStrategy"):
     """批量推理——每只股票逐一跑，最后汇总"""
-    print(f"{_SEP}")
-    print(f"  {strategy_name} — 批量性能")
-    print(f"{_SEP}")
+    logger.info("%s — 批量性能", strategy_name)
 
     files = _stock_csv_files(_RAW_DIR)
     if not files:
-        print("  ❌ K 线文件不存在")
+        logger.warning("K 线文件不存在")
         return
 
     rows = []
@@ -268,22 +244,18 @@ def test_batch(strategy_name="EnhancedVolumeStrategy"):
         data.append({"股票": r["code"], "行数": r["n"], "占比": f"{r['n']/total_rows*100:.1f}%"})
     data.append({"股票": "─── 合计 ───", "行数": total_rows, "占比": "100%"})
 
-    print()
-    print(_fmt_tbl(data, "keys", ("left", "right", "right")))
-    print(f"\n  总耗时: {total_time:.2f}s  |  均耗时: {avg_ms:.3f} ms/行")
+    logger.info("总耗时: %.2fs  |  均耗时: %.3f ms/行\n%s", total_time, avg_ms, _fmt_tbl(data, "keys", ("left", "right", "right")))
 
 
 def test_compare_with_actual(strategy_name="EnhancedVolumeStrategy"):
     """与策略原始信号逐日对比——每个信号类型独立二分类评估"""
-    print(f"{_SEP}")
-    print(f"  {strategy_name} — 策略对比评估")
-    print(f"{_SEP}")
+    logger.info("%s — 策略对比评估", strategy_name)
 
     from ml.train import find_signal_for_stock
 
     files = _stock_csv_files(_RAW_DIR)
     if not files:
-        print("  ❌ K 线文件不存在")
+        logger.warning("K 线文件不存在")
         return
 
     stats = {t: {"tp": 0, "fp": 0, "fn": 0, "tn": 0} for t in sig_types}
@@ -324,10 +296,10 @@ def test_compare_with_actual(strategy_name="EnhancedVolumeStrategy"):
                     stats[t]["tn"] += 1
 
     if total_dates == 0:
-        print(f"  ⚠️  无信号数据匹配（{skipped} 只股票无信号数据）")
+        logger.warning("无信号数据匹配（%d 只股票无信号数据）", skipped)
         return
 
-    print(f"\n  股票: {matched} 只  |  日期: {total_dates} 天  |  跳过: {skipped} 只\n")
+    logger.info("股票: %d 只  |  日期: %d 天  |  跳过: %d 只", matched, total_dates, skipped)
 
     rows = []
     for t in sig_types:
@@ -347,7 +319,7 @@ def test_compare_with_actual(strategy_name="EnhancedVolumeStrategy"):
             f"{f1:.1f}%",
         ])
 
-    print(_fmt_tbl(
+    logger.info("\n" + _fmt_tbl(
         rows,
         ["信号", "实际", "TP(正确检出)", "FP(误报)", "FN(漏报)", "精确率", "召回率", "F1(综合)"],
         ("left", "right", "right", "right", "right", "right", "right", "right"),
@@ -390,7 +362,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
             best_code = code_part
 
     if best is None:
-        print(f"  ❌ 未找到股票 {stock_code} 的K线文件")
+        logger.warning("未找到股票 %s 的K线文件", stock_code)
         return
 
     # 提取股票中文名
@@ -406,7 +378,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
         row = details[details["date"] == target]
         if row.empty:
             available = f"{details['date'].min().strftime('%Y-%m-%d')} ~ {details['date'].max().strftime('%Y-%m-%d')}"
-            print(f"  ❌ 日期 {date} 不在 {stock_name} 数据范围内（{available}）")
+            logger.warning("日期 %s 不在 %s 数据范围内（%s）", date, stock_name, available)
             return
         date_str = date
     else:
@@ -421,10 +393,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
         signals[st] = (prob_val, sig_val)
 
     has_signal = any(v for _, v in signals.values())
-
-    print(f"\n  {stock_name}（{best_code}）— {date_str}")
-    print(f"  {'⚠️  有交易信号' if has_signal else '✅  无交易信号'}")
-    print()
+    status_icon = "⚠️  有交易信号" if has_signal else "✅  无交易信号"
 
     tbl = []
     for st in sig_types:
@@ -435,11 +404,8 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
             f"{prob:.1%}",
             status,
         ])
-    print(_fmt_tbl(
-        tbl,
-        ["信号类型", "概率", "状态"],
-        ("left", "right", "left"),
-    ))
+    logger.info("%s（%s）— %s\n%s\n%s", stock_name, best_code, date_str, status_icon,
+                _fmt_tbl(tbl, ["信号类型", "概率", "状态"], ("left", "right", "left")))
 
     return {st: {"prob": float(prob), "signal": int(sig)}
             for st, (prob, sig) in signals.items()}
@@ -455,7 +421,6 @@ def _stock_csv_files(raw_dir):
         if not fname.endswith(".csv"):
             continue
         code = fname.split("_")[0]
-        print(fname)
         if code not in seen:
             seen.add(code)
             files.append(os.path.join(raw_dir, fname))
@@ -473,14 +438,12 @@ if __name__ == "__main__":
     code = "HK.03968"
 
     result = test_single_stock(code, strategy)
-    print(f"\n  ✅ 返回数据: code={result['code']}, signal_days={result['total_signal_days']}")
+    logger.info("返回数据: code=%s, signal_days=%s", result['code'], result['total_signal_days'])
     test_batch(strategy)
     test_compare_with_actual(strategy)
 
     check_stock_signal("HK.03968")  # 最新交易日
-    check_stock_signal("03968",date="2025-05-12")  # 指定日期
+    check_stock_signal("03968", date="2025-05-12")  # 指定日期
     check_stock_signal("00700", date="2025-11-04")  # 获取返回dict
 
-    print(f"{_SEP}")
-    print("  全部测试完成 ✓")
-    print(f"{_SEP}")
+    logger.info("全部测试完成 ✓")
