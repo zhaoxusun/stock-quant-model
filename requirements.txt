@@ -1,11 +1,8 @@
 numpy
-requests
-tabulate
-wcwidth
-beautifulsoup4
-xgboost
 pandas
-akshare
-baostock
+xgboost
+scikit-learn
 flask
 flask-cors
+akshare
+baostock
