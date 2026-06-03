@@ -10,3 +10,4 @@ akshare
 baostock
 flask
 flask-cors
+backtrader
