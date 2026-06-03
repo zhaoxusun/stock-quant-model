@@ -1,1 +1,8 @@
 ml/data/
+venv/
+__pycache__/
+.git/
+.gitignore
+.idea/
+README.md
+LICENSE
