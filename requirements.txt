@@ -8,6 +8,5 @@ xgboost
 pandas
 akshare
 baostock
-backtrader
 flask
 flask-cors
