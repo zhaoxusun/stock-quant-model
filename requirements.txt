@@ -1,0 +1,13 @@
+numpy
+scikit-learn
+requests
+tabulate
+wcwidth
+beautifulsoup4
+xgboost
+pandas
+akshare
+baostock
+backtrader
+flask
+flask-cors
