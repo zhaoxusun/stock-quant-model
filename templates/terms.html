@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="title">服务条款 · Quant AI Signal</title>
+<style>
+:root { --accent-cyan: #00d4ff; --accent-green: #00ff88; --text-body: rgba(200,220,255,0.75); --text-dim: rgba(200,220,255,0.4); --bg: #0a0e17; }
+body { font-family: -apple-system,'Segoe UI',monospace; background: var(--bg); color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px 60px; line-height: 1.8; }
+h1 { color: var(--accent-cyan); }
+h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 28px; }
+p, li { color: var(--text-body); font-size: 0.9rem; }
+a { color: var(--accent-cyan); }
+.lang-btn {
+  position: fixed; top: 10px; right: 14px; z-index: 200;
+  background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.25);
+  color: var(--accent-cyan); padding: 4px 14px; border-radius: 6px;
+  cursor: pointer; font-size: 0.78rem; font-family: var(--font-body,monospace);
+  transition: 0.2s;
+}
+.lang-btn:hover { background: rgba(0,180,255,0.2); }
+</style>
+</head>
+<body>
+<button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
+<h1 data-i18n="h1">服务条款</h1>
+<p data-i18n="updated">最后更新：2026 年 6 月</p>
+
+<h2 data-i18n="accept_h">接受条款</h2>
+<p data-i18n="accept_p">使用本工具即表示您同意本服务条款。如不同意，请停止使用本工具。</p>
+
+<h2 data-i18n="service_h">服务说明</h2>
+<p data-i18n="service_p">本工具基于机器学习模型对公开行情数据进行分析，输出交易信号。信号仅供研究参考，不构成任何投资建议、邀约或推荐。</p>
+
+<h2 data-i18n="disclaimer_h">免责声明</h2>
+<p data-i18n="disclaimer_p">本工具不保证信号的准确性、完整性、及时性或适用性。过去的表现不代表未来结果。任何基于本工具信号的投资决策均由用户自行承担全部风险。作者及本工具不对任何投资损失承担责任。</p>
+
+<h2 data-i18n="risk_h">风险提示</h2>
+<p data-i18n="risk_p">金融市场存在固有风险，量化模型可能因市场环境变化而失效。使用本工具前请充分了解相关风险。如有疑问，请咨询专业金融顾问。</p>
+
+<h2 data-i18n="use_h">使用限制</h2>
+<p data-i18n="use_p">禁止利用本工具进行：(1) 违法活动；(2) 对服务进行逆向工程、反编译或破解；(3) 通过自动化手段过度请求导致服务不可用；(4) 商业转售本工具的分析结果。</p>
+
+<h2 data-i18n="data_h">数据来源</h2>
+<p data-i18n="data_p">行情数据来源于第三方公开 API（akshare、baostock 等），本工具不对数据的准确性、连续性或可用性负责。第三方 API 可能随时变更或失效，恕不另行通知。</p>
+
+<h2 data-i18n="changes_h">条款变更</h2>
+<p data-i18n="changes_p">本条款可能随时更新。重大变更会通过网站公告通知。继续使用即视为接受更新后的条款。</p>
+
+<h2 data-i18n="contact_h">联系我们</h2>
+<p><span id="email"></span></p>
+
+<script>
+const LANG = {
+  zh: {
+    title: '服务条款 · Quant AI Signal',
+    h1: '服务条款',
+    updated: '最后更新：2026 年 6 月',
+    accept_h: '接受条款',
+    accept_p: '使用本工具即表示您同意本服务条款。如不同意，请停止使用本工具。',
+    service_h: '服务说明',
+    service_p: '本工具基于机器学习模型对公开行情数据进行分析，输出交易信号。信号仅供研究参考，不构成任何投资建议、邀约或推荐。',
+    disclaimer_h: '免责声明',
+    disclaimer_p: '本工具不保证信号的准确性、完整性、及时性或适用性。过去的表现不代表未来结果。任何基于本工具信号的投资决策均由用户自行承担全部风险。作者及本工具不对任何投资损失承担责任。',
+    risk_h: '风险提示',
+    risk_p: '金融市场存在固有风险，量化模型可能因市场环境变化而失效。使用本工具前请充分了解相关风险。如有疑问，请咨询专业金融顾问。',
+    use_h: '使用限制',
+    use_p: '禁止利用本工具进行：(1) 违法活动；(2) 对服务进行逆向工程、反编译或破解；(3) 通过自动化手段过度请求导致服务不可用；(4) 商业转售本工具的分析结果。',
+    data_h: '数据来源',
+    data_p: '行情数据来源于第三方公开 API（akshare、baostock 等），本工具不对数据的准确性、连续性或可用性负责。第三方 API 可能随时变更或失效，恕不另行通知。',
+    changes_h: '条款变更',
+    changes_p: '本条款可能随时更新。重大变更会通过网站公告通知。继续使用即视为接受更新后的条款。',
+    contact_h: '联系我们',
+  },
+  en: {
+    title: 'Terms of Service · Quant AI Signal',
+    h1: 'Terms of Service',
+    updated: 'Last updated: June 2026',
+    accept_h: 'Acceptance of Terms',
+    accept_p: 'By using this tool, you agree to these Terms of Service. If you do not agree, please discontinue use.',
+    service_h: 'Service Description',
+    service_p: 'This tool analyzes public market data using machine learning models and outputs trading signals. Signals are for research and reference only and do not constitute investment advice, solicitation, or recommendation.',
+    disclaimer_h: 'Disclaimer',
+    disclaimer_p: 'This tool does not guarantee the accuracy, completeness, timeliness, or suitability of its signals. Past performance does not guarantee future results. Any investment decisions based on this tool\'s signals are made at your own risk. The author and this tool assume no liability for any investment losses.',
+    risk_h: 'Risk Warning',
+    risk_p: 'Financial markets carry inherent risks. Quantitative models may fail due to changing market conditions. Fully understand the risks before using this tool. Consult a professional financial advisor if in doubt.',
+    use_h: 'Usage Restrictions',
+    use_p: 'You may not use this tool to: (1) engage in illegal activities; (2) reverse engineer, decompile, or crack the service; (3) overload the service through automated requests; (4) commercially resell analysis results.',
+    data_h: 'Data Sources',
+    data_p: 'Market data is sourced from third-party public APIs (akshare, baostock, etc.). This tool is not responsible for data accuracy, continuity, or availability. Third-party APIs may change or become unavailable without notice.',
+    changes_h: 'Changes to Terms',
+    changes_p: 'These terms may be updated at any time. Material changes will be announced on the website. Continued use constitutes acceptance of updated terms.',
+    contact_h: 'Contact Us',
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'zh';
+function t(key) {
+  const v = LANG[currentLang] ? LANG[currentLang][key] : LANG['zh'][key];
+  return typeof v === 'function' ? v : (v || key);
+}
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
+}
+function switchLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', currentLang);
+  translatePage();
+}
+translatePage();
+
+document.getElementById('email').textContent = ['zhaoxu', '0604', '@', 'gmail', '.com'].join('');
+</script>
+</body>
+</html>

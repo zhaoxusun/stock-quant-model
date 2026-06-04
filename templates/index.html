@@ -1450,7 +1450,16 @@ window.addEventListener('resize', () => {
   if (timelineChart) timelineChart.resize();
   if (klineChartInstance) klineChartInstance.resize();
 });
+
+document.querySelector('footer .year').textContent = new Date().getFullYear();
 </script>
+<footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(0,180,255,0.1);margin-top:40px;color:var(--text-dim);font-size:0.78rem;">
+  <p>© <span class="year">2026</span> Quant AI Signal. All rights reserved. |
+    <a href="/privacy" style="color:var(--accent-cyan);">隐私政策</a> ·
+    <a href="/terms" style="color:var(--accent-cyan);">服务条款</a> ·
+    <a href="/about" style="color:var(--accent-cyan);">关于</a>
+  </p>
+</footer>
 <!-- Default Statcounter code for quant-test.top -->
 <script type="text/javascript">
 var sc_project=13272736;
