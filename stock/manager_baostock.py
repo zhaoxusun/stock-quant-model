@@ -3,12 +3,42 @@ import os
 
 import baostock as bs
 import pandas as pd
+from pandas import DataFrame
 
 
 from logger import create_log
 from settings import stock_data_root
-from stock.utils import standardize_stock_data
 from util_csv import save_to_csv
+
+
+def standardize_stock_data(df: DataFrame, stock_code: str, stock_name: str, market) -> DataFrame:
+    df['stock_code'] = stock_code
+    df['stock_name'] = stock_name
+    df['market'] = market
+    cn_to_en_map = {
+        '日期': 'date', '交易日期': 'date',
+        '开盘': 'open', '开盘价': 'open',
+        '收盘': 'close', '收盘价': 'close',
+        '最高': 'high', '最高价': 'high',
+        '最低': 'low', '最低价': 'low',
+        '成交量': 'volume', '成交量(股)': 'volume',
+        '成交额': 'amount', '成交额(元)': 'amount', '成交额(港元)': 'amount',
+        '振幅': 'amplitude', '振幅(%)': 'amplitude',
+        '涨跌幅': 'change_pct', '涨跌幅(%)': 'change_pct',
+        '涨跌额': 'change',
+        '换手率': 'turnover_rate', '换手率(%)': 'turnover_rate',
+    }
+    renamed_columns = {col: cn_to_en_map.get(col, col) for col in df.columns}
+    df = df.rename(columns=renamed_columns)
+    required_columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount',
+                        'stock_code', 'stock_name', 'market']
+    for col in required_columns:
+        if col not in df.columns:
+            df[col] = pd.NA
+    if 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'])
+    df = df[required_columns].sort_values('date')
+    return df
 
 logger = create_log('manage_akshare')
 
