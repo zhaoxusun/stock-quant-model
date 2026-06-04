@@ -4,5 +4,5 @@ xgboost
 scikit-learn
 flask
 flask-cors
-akshare
+akshare[core]
 baostock
