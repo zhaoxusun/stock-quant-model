@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quant AI Signal 使用指南 · Quant AI Signal</title>
+<title data-i18n="title">Quant AI Signal 使用指南 · Quant AI Signal</title>
 <meta name="description" content="详细解读 Quant AI Signal 的四种交易信号含义、K 线图分析方法及使用注意事项。适合量化交易入门用户。">
 <style>
 :root { --accent-cyan: #00d4ff; --accent-green: #00ff88; --accent-orange: #ff9944; --accent-red: #ff4466; --text-body: rgba(200,220,255,0.75); --text-dim: rgba(200,220,255,0.4); --bg: #0a0e17; }
@@ -20,90 +20,241 @@ code { background: rgba(0,180,255,0.08); padding: 2px 6px; border-radius: 4px; f
 .signal-sell { background: rgba(255,68,102,0.15); color: var(--accent-red); border: 1px solid rgba(255,68,102,0.3); }
 .signal-strong-buy { background: rgba(0,255,136,0.25); color: #00ff88; border: 1px solid var(--accent-green); }
 .signal-strong-sell { background: rgba(255,68,102,0.25); color: #ff4466; border: 1px solid var(--accent-red); }
+.lang-btn { position: fixed; top: 10px; right: 14px; z-index: 200; background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.25); color: var(--accent-cyan); padding: 4px 14px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; transition: 0.2s; }
+.lang-btn:hover { background: rgba(0,180,255,0.2); }
 .footer-links { margin-top: 48px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 0.85rem; }
 .footer-links a { margin: 0 10px; }
 </style>
 </head>
 <body>
-<h1>📖 Quant AI Signal 使用指南</h1>
-<p style="color:var(--text-dim);">最后更新：2026 年 6 月 3 日</p>
+<button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
+<h1 data-i18n="h1">📖 Quant AI Signal 使用指南</h1>
+<p style="color:var(--text-dim);" data-i18n="updated">最后更新：2026 年 6 月 3 日</p>
 
-<h2>什么是 Quant AI Signal？</h2>
-<p>Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种交易信号，帮助投资者更全面地理解市场状态。</p>
-<p>与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
+<h2 data-i18n="what_h">什么是 Quant AI Signal？</h2>
+<p data-i18n="what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种交易信号，帮助投资者更全面地理解市场状态。</p>
+<p data-i18n="what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
 
-<h2>四种交易信号解读</h2>
+<h2 data-i18n="signals_h">四种交易信号解读</h2>
 
-<h3><span class="signal-box signal-buy">买入</span> Normal Buy</h3>
-<p>模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前具备一定的上涨动能，可予以关注。</p>
+<h3><span class="signal-box signal-buy" data-i18n="signal_buy_label">买入</span> <span data-i18n="signal_buy_en">Normal Buy</span></h3>
+<p data-i18n="signal_buy_desc">模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前具备一定的上涨动能，可予以关注。</p>
 
-<h3><span class="signal-box signal-strong-buy">强买</span> Strong Buy</h3>
-<p>多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：市场情绪较为乐观，上涨动能较强。</p>
+<h3><span class="signal-box signal-strong-buy" data-i18n="signal_strong_buy_label">强买</span> <span data-i18n="signal_strong_buy_en">Strong Buy</span></h3>
+<p data-i18n="signal_strong_buy_desc">多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：市场情绪较为乐观，上涨动能较强。</p>
 
-<h3><span class="signal-box signal-sell">卖出</span> Normal Sell</h3>
-<p>模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：短期可能存在回调风险。</p>
+<h3><span class="signal-box signal-sell" data-i18n="signal_sell_label">卖出</span> <span data-i18n="signal_sell_en">Normal Sell</span></h3>
+<p data-i18n="signal_sell_desc">模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：短期可能存在回调风险。</p>
 
-<h3><span class="signal-box signal-strong-sell">强卖</span> Strong Sell</h3>
-<p>多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：下行风险较大，需谨慎对待。</p>
+<h3><span class="signal-box signal-strong-sell" data-i18n="signal_strong_sell_label">强卖</span> <span data-i18n="signal_strong_sell_en">Strong Sell</span></h3>
+<p data-i18n="signal_strong_sell_desc">多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：下行风险较大，需谨慎对待。</p>
 
 <div style="background:rgba(255,180,50,0.08);border:1px solid rgba(255,180,50,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;">
-  <strong>⚠ 重要提示：</strong> 所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。
+  <strong data-i18n="warning_label">⚠ 重要提示：</strong> <span data-i18n="warning_text">所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。</span>
 </div>
 
-<h2>如何使用本工具</h2>
+<h2 data-i18n="howto_h">如何使用本工具</h2>
 
-<h3>第一步：输入股票代码</h3>
-<p>在首页搜索框中输入股票代码，支持四种市场格式：</p>
+<h3 data-i18n="step1_h">第一步：输入股票代码</h3>
+<p data-i18n="step1_p">在首页搜索框中输入股票代码，支持四种市场格式：</p>
 <ul>
-  <li><strong>A 股</strong>：<code>SH.600519</code>（上海）/ <code>SZ.000001</code>（深圳）</li>
-  <li><strong>港股</strong>：<code>HK.00700</code></li>
-  <li><strong>美股</strong>：<code>US.AAPL</code></li>
+  <li data-i18n="step1_a"><strong>A 股</strong>：<code>SH.600519</code>（上海）/ <code>SZ.000001</code>（深圳）</li>
+  <li data-i18n="step1_hk"><strong>港股</strong>：<code>HK.00700</code></li>
+  <li data-i18n="step1_us"><strong>美股</strong>：<code>US.AAPL</code></li>
 </ul>
 
-<h3>第二步：查看分析结果</h3>
-<p>提交后，系统会加载 XGBoost 模型并获取最近约 3 年的历史行情数据进行推理。分析结果包含：</p>
+<h3 data-i18n="step2_h">第二步：查看分析结果</h3>
+<p data-i18n="step2_p">提交后，系统会加载 XGBoost 模型并获取最近约 3 年的历史行情数据进行推理。分析结果包含：</p>
 <ul>
-  <li><strong>最新信号</strong>：当前交易日的最新信号类型和概率</li>
-  <li><strong>近一周信号详情</strong>：最近 5 个交易日的信号列表</li>
-  <li><strong>信号统计</strong>：历史信号的整体分布和有信号日占比</li>
-  <li><strong>信号概率分布图</strong>：近一周每个交易日的四种信号概率柱状图</li>
-  <li><strong>K 线图</strong>：带信号标记的蜡烛图，直观展示价格走势与信号的关系</li>
-  <li><strong>信号时间线</strong>：全部交易日信号趋势图</li>
-  <li><strong>信号明细表</strong>：所有交易日的逐日信号数据</li>
+  <li data-i18n="step2_r1"><strong>最新信号</strong>：当前交易日的最新信号类型和概率</li>
+  <li data-i18n="step2_r2"><strong>近一周信号详情</strong>：最近 5 个交易日的信号列表</li>
+  <li data-i18n="step2_r3"><strong>信号统计</strong>：历史信号的整体分布和有信号日占比</li>
+  <li data-i18n="step2_r4"><strong>信号概率分布图</strong>：近一周每个交易日的四种信号概率柱状图</li>
+  <li data-i18n="step2_r5"><strong>K 线图</strong>：带信号标记的蜡烛图，直观展示价格走势与信号的关系</li>
+  <li data-i18n="step2_r6"><strong>信号时间线</strong>：全部交易日信号趋势图</li>
+  <li data-i18n="step2_r7"><strong>信号明细表</strong>：所有交易日的逐日信号数据</li>
 </ul>
 
-<h3>第三步：结合 K 线图进行分析</h3>
-<p>K 线图中使用不同颜色标记信号发生的位置：</p>
+<h3 data-i18n="step3_h">第三步：结合 K 线图进行分析</h3>
+<p data-i18n="step3_p">K 线图中使用不同颜色标记信号发生的位置：</p>
 <ul>
-  <li><strong style="color:#00ff88;">绿色箭头 ↑</strong> — 买入信号</li>
-  <li><strong style="color:#00ff88;">绿色三角 ▲</strong> — 强买信号</li>
-  <li><strong style="color:#ff4466;">红色箭头 ↓</strong> — 卖出信号</li>
-  <li><strong style="color:#ff4466;">红色三角 ▼</strong> — 强卖信号</li>
+  <li><strong style="color:#00ff88;">↑</strong> <span data-i18n="step3_buy">买入信号</span></li>
+  <li><strong style="color:#00ff88;">▲</strong> <span data-i18n="step3_strong_buy">强买信号</span></li>
+  <li><strong style="color:#ff4466;">↓</strong> <span data-i18n="step3_sell">卖出信号</span></li>
+  <li><strong style="color:#ff4466;">▼</strong> <span data-i18n="step3_strong_sell">强卖信号</span></li>
 </ul>
 
-<h2>数据来源与更新频率</h2>
+<h2 data-i18n="source_h">数据来源与更新频率</h2>
 <ul>
-  <li><strong>数据来源</strong>：akshare（A 股/港股/美股）、baostock（沪深）</li>
-  <li><strong>更新频率</strong>：每日收盘后自动更新一次，T+1 日可查询</li>
-  <li><strong>回测范围</strong>：最近约 3 年的历史数据（约 750 个交易日）</li>
+  <li><strong data-i18n="source_label">数据来源</strong><span data-i18n="source_value">：akshare（A 股/港股/美股）、baostock（沪深）</span></li>
+  <li><strong data-i18n="freq_label">更新频率</strong><span data-i18n="freq_value">：每日收盘后自动更新一次，T+1 日可查询</span></li>
+  <li><strong data-i18n="range_label">回测范围</strong><span data-i18n="range_value">：最近约 3 年的历史数据（约 750 个交易日）</span></li>
 </ul>
 
-<h2>常见问题</h2>
+<h2 data-i18n="faq_h">常见问题</h2>
 
-<h3>信号准确率如何？</h3>
-<p>模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的交易依据。</p>
+<h3 data-i18n="faq1_q">信号准确率如何？</h3>
+<p data-i18n="faq1_a">模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的交易依据。</p>
 
-<h3>为什么有些股票没有信号？</h3>
-<p>部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
+<h3 data-i18n="faq2_q">为什么有些股票没有信号？</h3>
+<p data-i18n="faq2_a">部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
 
-<h3>工具免费使用吗？</h3>
-<p>是的，Quant AI Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
+<h3 data-i18n="faq3_q">工具免费使用吗？</h3>
+<p data-i18n="faq3_a">是的，Quant AI Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
 
 <div class="footer-links">
-  <a href="/">← 返回首页</a>
-  <a href="/about">关于本站</a>
-  <a href="/privacy">隐私政策</a>
-  <a href="/terms">服务条款</a>
+  <a href="/" data-i18n="back_home">← 返回首页</a>
+  <a href="/about" data-i18n="footer_about">关于本站</a>
+  <a href="/privacy" data-i18n="footer_privacy">隐私政策</a>
+  <a href="/terms" data-i18n="footer_terms">服务条款</a>
 </div>
+
+<script>
+const LANG = {
+  zh: {
+    title: 'Quant AI Signal 使用指南 · Quant AI Signal',
+    h1: '📖 Quant AI Signal 使用指南',
+    updated: '最后更新：2026 年 6 月 3 日',
+    what_h: '什么是 Quant AI Signal？',
+    what_p1: 'Quant AI Signal 是一个基于 XGBoost 多标签分类模型的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种交易信号，帮助投资者更全面地理解市场状态。',
+    what_p2: '与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。',
+    signals_h: '四种交易信号解读',
+    signal_buy_label: '买入',
+    signal_buy_en: 'Normal Buy',
+    signal_buy_desc: '模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前具备一定的上涨动能，可予以关注。',
+    signal_strong_buy_label: '强买',
+    signal_strong_buy_en: 'Strong Buy',
+    signal_strong_buy_desc: '多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：市场情绪较为乐观，上涨动能较强。',
+    signal_sell_label: '卖出',
+    signal_sell_en: 'Normal Sell',
+    signal_sell_desc: '模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：短期可能存在回调风险。',
+    signal_strong_sell_label: '强卖',
+    signal_strong_sell_en: 'Strong Sell',
+    signal_strong_sell_desc: '多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：下行风险较大，需谨慎对待。',
+    warning_label: '⚠ 重要提示：',
+    warning_text: '所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。',
+    howto_h: '如何使用本工具',
+    step1_h: '第一步：输入股票代码',
+    step1_p: '在首页搜索框中输入股票代码，支持四种市场格式：',
+    step1_a: 'A 股：SH.600519（上海）/ SZ.000001（深圳）',
+    step1_hk: '港股：HK.00700',
+    step1_us: '美股：US.AAPL',
+    step2_h: '第二步：查看分析结果',
+    step2_p: '提交后，系统会加载 XGBoost 模型并获取最近约 3 年的历史行情数据进行推理。分析结果包含：',
+    step2_r1: '最新信号：当前交易日的最新信号类型和概率',
+    step2_r2: '近一周信号详情：最近 5 个交易日的信号列表',
+    step2_r3: '信号统计：历史信号的整体分布和有信号日占比',
+    step2_r4: '信号概率分布图：近一周每个交易日的四种信号概率柱状图',
+    step2_r5: 'K 线图：带信号标记的蜡烛图，直观展示价格走势与信号的关系',
+    step2_r6: '信号时间线：全部交易日信号趋势图',
+    step2_r7: '信号明细表：所有交易日的逐日信号数据',
+    step3_h: '第三步：结合 K 线图进行分析',
+    step3_p: 'K 线图中使用不同颜色标记信号发生的位置：',
+    step3_buy: '买入信号',
+    step3_strong_buy: '强买信号',
+    step3_sell: '卖出信号',
+    step3_strong_sell: '强卖信号',
+    source_h: '数据来源与更新频率',
+    source_label: '数据来源',
+    source_value: '：akshare（A 股/港股/美股）、baostock（沪深）',
+    freq_label: '更新频率',
+    freq_value: '：每日收盘后自动更新一次，T+1 日可查询',
+    range_label: '回测范围',
+    range_value: '：最近约 3 年的历史数据（约 750 个交易日）',
+    faq_h: '常见问题',
+    faq1_q: '信号准确率如何？',
+    faq1_a: '模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的交易依据。',
+    faq2_q: '为什么有些股票没有信号？',
+    faq2_a: '部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。',
+    faq3_q: '工具免费使用吗？',
+    faq3_a: '是的，Quant AI Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。',
+    back_home: '← 返回首页',
+    footer_about: '关于本站',
+    footer_privacy: '隐私政策',
+    footer_terms: '服务条款',
+  },
+  en: {
+    title: 'Quant AI Signal User Guide · Quant AI Signal',
+    h1: '📖 Quant AI Signal User Guide',
+    updated: 'Last updated: June 3, 2026',
+    what_h: 'What is Quant AI Signal?',
+    what_p1: 'Quant AI Signal is an online quantitative signal analysis tool based on an XGBoost multi-label classification model. It analyzes historical stock data through deep learning inference and outputs four trading signals to help investors better understand market conditions.',
+    what_p2: 'Unlike traditional single technical indicators, this model evaluates dozens of features including price trends, volume changes, and technical indicators (RSI, MACD, Bollinger Bands, etc.). It performs rolling inference after each market close and outputs reference signals before the next trading day opens.',
+    signals_h: 'Four Trading Signals Explained',
+    signal_buy_label: 'Buy',
+    signal_buy_en: 'Normal Buy',
+    signal_buy_desc: 'The model detects an upward price trend, moderate volume expansion, and reasonable technical indicator ranges. Meaning: the stock has upward momentum worth monitoring.',
+    signal_strong_buy_label: 'Str Buy',
+    signal_strong_buy_en: 'Strong Buy',
+    signal_strong_buy_desc: 'Multiple feature dimensions point in a positive direction: price breaks through key moving averages, volume expands significantly, and multiple technical indicators align. Meaning: market sentiment is optimistic with strong upward momentum.',
+    signal_sell_label: 'Sell',
+    signal_sell_en: 'Normal Sell',
+    signal_sell_desc: 'The model detects price pressure, declining volume or volume-driven drops, and indicators entering a pullback phase. Meaning: short-term correction risk exists.',
+    signal_strong_sell_label: 'Str Sell',
+    signal_strong_sell_en: 'Strong Sell',
+    signal_strong_sell_desc: 'Multiple features signal warnings: price breaks below key support, indicators show overbought pullback or oversold extension, abnormal price-volume relationship. Meaning: significant downside risk requiring caution.',
+    warning_label: '⚠ Important Note:',
+    warning_text: 'All signals are probability outputs, not deterministic predictions. Any trading decisions should be made independently based on your own risk tolerance and money management strategy.',
+    howto_h: 'How to Use This Tool',
+    step1_h: 'Step 1: Enter a Stock Code',
+    step1_p: 'Enter a stock code in the search box. Four market formats are supported:',
+    step1_a: 'A-shares: SH.600519 (Shanghai) / SZ.000001 (Shenzhen)',
+    step1_hk: 'Hong Kong: HK.00700',
+    step1_us: 'US Stocks: US.AAPL',
+    step2_h: 'Step 2: View Analysis Results',
+    step2_p: 'After submission, the system loads the XGBoost model and fetches approximately 3 years of historical data for inference. Results include:',
+    step2_r1: 'Latest Signal: most recent signal type and probability',
+    step2_r2: 'Weekly Signal Detail: signal list for the last 5 trading days',
+    step2_r3: 'Signal Statistics: overall distribution and signal day ratio',
+    step2_r4: 'Signal Probability Chart: bar chart of 4 signal probabilities per day for the last week',
+    step2_r5: 'K-line Chart: candlestick chart with signal markers showing price-signal relationships',
+    step2_r6: 'Signal Timeline: trend chart across all trading days',
+    step2_r7: 'Signal Details Table: daily signal data for all trading days',
+    step3_h: 'Step 3: Analyze with the K-line Chart',
+    step3_p: 'The K-line chart uses different colors to mark signal positions:',
+    step3_buy: 'Buy signal',
+    step3_strong_buy: 'Strong buy signal',
+    step3_sell: 'Sell signal',
+    step3_strong_sell: 'Strong sell signal',
+    source_h: 'Data Sources & Update Frequency',
+    source_label: 'Data sources',
+    source_value: ': akshare (A/HK/US), baostock (China A-shares)',
+    freq_label: 'Update frequency',
+    freq_value: ': once daily after market close, available T+1',
+    range_label: 'Backtest range',
+    range_value: ': approximately 3 years of history (~750 trading days)',
+    faq_h: 'FAQ',
+    faq1_q: 'How accurate are the signals?',
+    faq1_a: 'The model is trained to optimize the match between signals and subsequent price movements. Since markets are highly random, any model has prediction limitations. Use signals as supplementary reference, not your sole trading basis.',
+    faq2_q: 'Why do some stocks have no signal?',
+    faq2_a: 'Some stocks may have insufficient data (new listings, long suspensions) or the model confidence may be too low, resulting in "no signal." This itself provides useful reference information.',
+    faq3_q: 'Is this tool free?',
+    faq3_a: 'Yes, Quant AI Signal is completely free. Non-intrusive ads may be added in the future to cover server costs without affecting core functionality.',
+    back_home: '← Back to Home',
+    footer_about: 'About',
+    footer_privacy: 'Privacy Policy',
+    footer_terms: 'Terms of Service',
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'zh';
+function t(key) {
+  const v = LANG[currentLang] ? LANG[currentLang][key] : LANG['zh'][key];
+  return typeof v === 'function' ? v : (v || key);
+}
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
+}
+function switchLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', currentLang);
+  translatePage();
+}
+translatePage();
+</script>
 </body>
 </html>
