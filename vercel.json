@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "app.py": {
-      "excludeFiles": "{ml/test_model.py,ml/train.py,stock/utils.py,util_csv.py,templates/**,.python-version,.vercelignore,**/__pycache__/**}"
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",
