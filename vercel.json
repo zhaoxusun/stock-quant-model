@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "app.py": {
-      "excludeFiles": "{ml/train.py,stock/utils.py,util_csv.py,templates/**,cleanup_vercel.py,**/__pycache__/**}"
-    }
-  },
   "env": {
     "UV_COMPILE_BYTECODE": "0",
     "UV_NO_CACHE": "1"
