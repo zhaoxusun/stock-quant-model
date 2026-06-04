@@ -235,7 +235,21 @@ def clean():
     # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
     total_saved += strip_so(sitepkgs)
 
-    # 12. Remove dead code files
+    # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
+    import gzip as _gzip
+    for root, dirs, files in os.walk(os.getcwd()):
+        for f in files:
+            if f == 'model.pkl':
+                fp = os.path.join(root, f)
+                old = os.path.getsize(fp)
+                with open(fp, 'rb') as src, _gzip.open(fp + '.gz', 'wb', 9) as dst:
+                    dst.writelines(src)
+                os.remove(fp)
+                new = os.path.getsize(fp + '.gz')
+                total_saved += old - new
+                print(f'  Gzipped {os.path.relpath(fp)} ({old/1e6:.1f} MB → {new/1e6:.1f} MB)')
+
+    # 13. Remove dead code files
     for dead in ('ml/anti_cheat.py',):
         fp = os.path.join(os.getcwd(), dead)
         s = rm(fp)
