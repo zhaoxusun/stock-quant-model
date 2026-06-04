@@ -1,6 +1,6 @@
 numpy
 pandas
-xgboost  # cpu-only for inference
+
 scikit-learn
 flask
 flask-cors
