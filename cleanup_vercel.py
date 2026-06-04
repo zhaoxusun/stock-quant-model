@@ -46,11 +46,13 @@ def strip_so(path):
     saved = 0
     for root, dirs, files in os.walk(path):
         for f in files:
-            if f.endswith('.so'):
+            if '.so' in f:
                 fp = os.path.join(root, f)
+                if os.path.islink(fp):
+                    continue
                 old = os.path.getsize(fp)
                 try:
-                    subprocess.run(['strip', fp], capture_output=True, timeout=30)
+                    subprocess.run(['strip', '--strip-all', fp], capture_output=True, timeout=30)
                     new = os.path.getsize(fp)
                     saved += old - new
                 except Exception:
@@ -231,14 +233,20 @@ def clean():
         total_saved += strip_so(xgb_pkgs)
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
-            # Remove CPU-only module files that aren't needed for prediction
-            for mod in ('plotting.py', 'dask.py', 'spark.py', 'collective.py'):
+            # Remove unnecessary modules (files AND directories)
+            for mod in ('plotting.py', 'dask', 'spark', 'collective.py', 'testing', 'federated.py', 'tracker.py', 'compat.py', 'contrib'):
                 fp = os.path.join(xgb_dir, mod)
-                if os.path.isfile(fp):
-                    sz = os.path.getsize(fp)
-                    os.remove(fp)
-                    total_saved += sz
-                    print(f'  Removed xgb_pkgs/xgboost/{mod} ({sz/1e6:.1f} MB)')
+                saved = rm(fp)
+                if saved:
+                    total_saved += saved
+                    print(f'  Removed xgb_pkgs/xgboost/{mod} ({saved/1e6:.1f} MB)')
+            # Remove .dist-info from xgb_pkgs (metadata not needed)
+            for item in os.listdir(xgb_pkgs):
+                if item.endswith('.dist-info') or item.endswith('.egg-info'):
+                    saved = rm(os.path.join(xgb_pkgs, item))
+                    if saved:
+                        total_saved += saved
+                        print(f'  Removed xgb_pkgs/{item} ({saved/1e6:.1f} MB)')
             # Strip GPU/CUDA files
             for root, dirs, files in os.walk(xgb_dir):
                 for f in files:
@@ -254,7 +262,7 @@ def clean():
                         if saved:
                             total_saved += saved
                             print(f'  Removed xgb_pkgs/xgboost/{d} ({saved/1e6:.1f} MB)')
-        # Remove __pycache__ and .pyc from xgb_pkgs
+        # Remove .pyi stubs, __pycache__, and .pyc from xgb_pkgs
         for root, dirs, files in os.walk(xgb_pkgs):
             for d in list(dirs):
                 if d == '__pycache__':
@@ -262,7 +270,7 @@ def clean():
                     if saved:
                         total_saved += saved
             for f in files:
-                if f.endswith('.pyc'):
+                if f.endswith('.pyc') or f.endswith('.pyi'):
                     fp = os.path.join(root, f)
                     total_saved += os.path.getsize(fp)
                     os.remove(fp)
