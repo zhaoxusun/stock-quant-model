@@ -3,6 +3,7 @@ import shutil
 import glob
 import site
 import sys
+import subprocess
 
 
 def get_site_packages():
@@ -39,6 +40,24 @@ def rm(path):
         shutil.rmtree(path)
         return sz
     return 0
+
+
+def strip_so(path):
+    saved = 0
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if f.endswith('.so'):
+                fp = os.path.join(root, f)
+                old = os.path.getsize(fp)
+                try:
+                    subprocess.run(['strip', fp], capture_output=True, timeout=30)
+                    new = os.path.getsize(fp)
+                    saved += old - new
+                except Exception:
+                    pass
+    if saved:
+        print(f'  Stripped .so files in {os.path.basename(path)} (saved {saved/1e6:.1f} MB)')
+    return saved
 
 
 def clean():
@@ -183,11 +202,24 @@ def clean():
                 total_saved += os.path.getsize(fp)
                 os.remove(fp)
 
-    # 11. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
+    # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
+    total_saved += strip_so(sitepkgs)
+
+    # 12. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
+        total_saved += strip_so(xgb_pkgs)
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
+            # Remove CPU-only module files that aren't needed for prediction
+            for mod in ('plotting.py', 'dask.py', 'spark.py', 'collective.py'):
+                fp = os.path.join(xgb_dir, mod)
+                if os.path.isfile(fp):
+                    sz = os.path.getsize(fp)
+                    os.remove(fp)
+                    total_saved += sz
+                    print(f'  Removed xgb_pkgs/xgboost/{mod} ({sz/1e6:.1f} MB)')
+            # Strip GPU/CUDA files
             for root, dirs, files in os.walk(xgb_dir):
                 for f in files:
                     if 'cuda' in f.lower() or 'nccl' in f.lower() or 'gpu' in f.lower():
@@ -202,7 +234,7 @@ def clean():
                         if saved:
                             total_saved += saved
                             print(f'  Removed xgb_pkgs/xgboost/{d} ({saved/1e6:.1f} MB)')
-        # Strip .pyc and __pycache__ from xgb_pkgs too
+        # Remove __pycache__ and .pyc from xgb_pkgs
         for root, dirs, files in os.walk(xgb_pkgs):
             for d in list(dirs):
                 if d == '__pycache__':

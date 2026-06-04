@@ -3,7 +3,7 @@
     "UV_COMPILE_BYTECODE": "0",
     "UV_NO_CACHE": "1"
   },
-  "buildCommand": "uv pip install xgboost --no-deps -t xgb_pkgs && find xgb_pkgs /vercel/path0/.vercel/python/.venv/lib/python3.12/site-packages -name '*.so' -exec strip {} \\; 2>/dev/null; python3 cleanup_vercel.py",
+  "buildCommand": "uv pip install xgboost --no-deps -t xgb_pkgs && python3 cleanup_vercel.py",
   "routes": [
     {
       "src": "/(.*)",
