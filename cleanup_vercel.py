@@ -263,6 +263,13 @@ def clean():
         total_saved += strip_so(xgb_pkgs)
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
+            # Remove unnecessary modules (safe: not imported eagerly by xgboost)
+            for mod in ('plotting.py', 'dask', 'spark', 'testing', 'federated.py', 'contrib'):
+                fp = os.path.join(xgb_dir, mod)
+                saved = rm(fp)
+                if saved:
+                    total_saved += saved
+                    print(f'  Removed xgb_pkgs/xgboost/{mod} ({saved/1e6:.1f} MB)')
             # Remove .dist-info from xgb_pkgs (metadata not needed)
             for item in os.listdir(xgb_pkgs):
                 if item.endswith('.dist-info') or item.endswith('.egg-info'):
