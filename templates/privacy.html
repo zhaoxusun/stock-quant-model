@@ -11,18 +11,10 @@ h1 { color: var(--accent-cyan); }
 h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 28px; }
 p, li { color: var(--text-body); font-size: 0.9rem; }
 a { color: var(--accent-cyan); }
-.lang-btn {
-  position: fixed; top: 10px; right: 14px; z-index: 200;
-  background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.25);
-  color: var(--accent-cyan); padding: 4px 14px; border-radius: 6px;
-  cursor: pointer; font-size: 0.78rem; font-family: var(--font-body,monospace);
-  transition: 0.2s;
-}
-.lang-btn:hover { background: rgba(0,180,255,0.2); }
 </style>
 </head>
 <body>
-<button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
+{% include '_header.html' %}
 <h1 data-i18n="h1">隐私政策</h1>
 <p data-i18n="updated">最后更新：2026 年 6 月</p>
 
@@ -65,6 +57,10 @@ const LANG = {
     disclaimer_h: '免责声明',
     disclaimer_p: '本工具输出的所有信号仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。',
     contact_h: '联系我们',
+    logo: '✦ Quant AI Signal',
+    nav_about: '关于',
+    nav_blog: '博客',
+    nav_privacy: '隐私',
   },
   en: {
     title: 'Privacy Policy · Quant AI Signal',
@@ -83,6 +79,10 @@ const LANG = {
     disclaimer_h: 'Disclaimer',
     disclaimer_p: 'All signals output by this tool are for reference only and do not constitute investment advice. Trading involves risk.',
     contact_h: 'Contact Us',
+    logo: '✦ Quant AI Signal',
+    nav_about: 'About',
+    nav_blog: 'Blog',
+    nav_privacy: 'Privacy',
   }
 };
 

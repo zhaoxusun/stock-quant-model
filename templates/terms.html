@@ -11,18 +11,10 @@ h1 { color: var(--accent-cyan); }
 h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 28px; }
 p, li { color: var(--text-body); font-size: 0.9rem; }
 a { color: var(--accent-cyan); }
-.lang-btn {
-  position: fixed; top: 10px; right: 14px; z-index: 200;
-  background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.25);
-  color: var(--accent-cyan); padding: 4px 14px; border-radius: 6px;
-  cursor: pointer; font-size: 0.78rem; font-family: var(--font-body,monospace);
-  transition: 0.2s;
-}
-.lang-btn:hover { background: rgba(0,180,255,0.2); }
 </style>
 </head>
 <body>
-<button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
+{% include '_header.html' %}
 <h1 data-i18n="h1">服务条款</h1>
 <p data-i18n="updated">最后更新：2026 年 6 月</p>
 
@@ -71,6 +63,10 @@ const LANG = {
     changes_h: '条款变更',
     changes_p: '本条款可能随时更新。重大变更会通过网站公告通知。继续使用即视为接受更新后的条款。',
     contact_h: '联系我们',
+    logo: '✦ Quant AI Signal',
+    nav_about: '关于',
+    nav_blog: '博客',
+    nav_privacy: '隐私',
   },
   en: {
     title: 'Terms of Service · Quant AI Signal',
@@ -91,6 +87,10 @@ const LANG = {
     changes_h: 'Changes to Terms',
     changes_p: 'These terms may be updated at any time. Material changes will be announced on the website. Continued use constitutes acceptance of updated terms.',
     contact_h: 'Contact Us',
+    logo: '✦ Quant AI Signal',
+    nav_about: 'About',
+    nav_blog: 'Blog',
+    nav_privacy: 'Privacy',
   }
 };
 
