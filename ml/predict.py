@@ -1,5 +1,6 @@
 import os
 import json
+import gzip
 import pickle
 
 import pandas as pd
@@ -15,21 +16,24 @@ def load_model(strategy_name):
     if strategy_name in _model_cache:
         return _model_cache[strategy_name]
 
-    model_path = os.path.join(MODEL_DIR, strategy_name, "model.pkl")
-    cols_path = os.path.join(MODEL_DIR, strategy_name, "feature_columns.json")
+    model_dir = os.path.join(MODEL_DIR, strategy_name)
+    model_path = os.path.join(model_dir, "model.pkl")
+    gz_path = model_path + ".gz"
 
-    if not os.path.exists(model_path):
+    # Prefer gzipped model (built by cleanup_vercel.py), fallback to raw
+    if os.path.exists(gz_path):
+        with gzip.open(gz_path, "rb") as f:
+            model = pickle.load(f)
+    elif os.path.exists(model_path):
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+    else:
         raise FileNotFoundError(
             f"Model not found: {model_path}. "
             f"Run `python ml/train.py` first."
         )
-    if not os.path.exists(cols_path):
-        raise FileNotFoundError(
-            f"Feature columns not found: {cols_path}."
-        )
 
-    with open(model_path, "rb") as f:
-        model = pickle.load(f)
+    cols_path = os.path.join(model_dir, "feature_columns.json")
 
     with open(cols_path, "r") as f:
         feature_columns = json.load(f)
