@@ -108,7 +108,14 @@ def clean():
             total_saved += saved
             print(f'  Removed {pkg} ({saved/1e6:.1f} MB)')
 
-    # 4. Remove nvidia CUDA libs (413 MB, GPU training only, not needed for inference)
+    # 4. Remove openpyxl + xlrd (akshare declares them but never imports)
+    for pkg in ('openpyxl', 'xlrd', 'et_xmlfile'):
+        saved = rm(os.path.join(sitepkgs, pkg))
+        if saved:
+            total_saved += saved
+            print(f'  Removed {pkg} ({saved/1e6:.1f} MB)')
+
+    # 5. Remove nvidia CUDA libs (413 MB, GPU training only, not needed for inference)
     for item in os.listdir(sitepkgs):
         if item.startswith('nvidia') or 'nvidia' in item.lower():
             saved = rm(os.path.join(sitepkgs, item))
