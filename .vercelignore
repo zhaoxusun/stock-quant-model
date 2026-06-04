@@ -1,6 +1,7 @@
 ml/train.py
 stock/utils.py
 util_csv.py
+cleanup_vercel.py
 **.md
 LICENSE
 __pycache__/
