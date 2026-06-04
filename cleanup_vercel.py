@@ -264,7 +264,7 @@ def clean():
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
             # Remove unnecessary modules (files AND directories)
-            for mod in ('plotting.py', 'dask', 'spark', 'collective.py', 'testing', 'federated.py', 'tracker.py', 'compat.py', 'contrib'):
+            for mod in ('plotting.py', 'dask', 'spark', 'collective.py', 'testing', 'federated.py', 'compat.py', 'contrib'):
                 fp = os.path.join(xgb_dir, mod)
                 saved = rm(fp)
                 if saved:
