@@ -3,6 +3,9 @@ import sys
 
 _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _PROJECT_ROOT)
+_xgb_pkgs = os.path.join(_PROJECT_ROOT, 'xgb_pkgs')
+if os.path.isdir(_xgb_pkgs):
+    sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
 from flask import Flask, jsonify, request, render_template
