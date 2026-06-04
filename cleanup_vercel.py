@@ -41,15 +41,6 @@ def rm(path):
     return 0
 
 
-def report_size(label, path):
-    if os.path.exists(path):
-        sz = dir_size(path)
-        print(f'  [{sz/1e6:7.1f} MB] {label}')
-        return sz
-    print(f'  [  -- MB] {label} (not found)')
-    return 0
-
-
 def clean():
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
@@ -58,8 +49,7 @@ def clean():
 
     print(f'Site-packages: {sitepkgs}')
     total_before = dir_size(sitepkgs)
-    print(f'Total BEFORE: {total_before / 1e6:.1f} MB')
-    print()
+    print(f'Total BEFORE: {total_before / 1e6:.1f} MB\n')
 
     # -- large package size report --
     print('--- Package size report (pre-cleanup) ---')
@@ -82,7 +72,7 @@ def clean():
                     sz = os.path.getsize(f)
                     os.remove(f)
                     total_saved += sz
-                    print(f'  Removed {os.path.relpath(f, racer_dir)} ({sz/1e6:.1f} MB)')
+                    print(f'  Removed py_mini_racer/{os.path.basename(f)} ({sz/1e6:.1f} MB)')
 
     # 2. Remove pip (build tool)
     saved = rm(os.path.join(sitepkgs, 'pip'))
@@ -97,10 +87,18 @@ def clean():
             total_saved += saved
             print(f'  Removed {pkg} ({saved/1e6:.1f} MB)')
 
-    # 4. scipy: strip everything except scipy.sparse (needed by sklearn)
+    # 4. Remove nvidia CUDA libs (413 MB, GPU training only, not needed for inference)
+    for item in os.listdir(sitepkgs):
+        if item.startswith('nvidia') or 'nvidia' in item.lower():
+            saved = rm(os.path.join(sitepkgs, item))
+            if saved:
+                total_saved += saved
+                print(f'  Removed {item} ({saved/1e6:.1f} MB)')
+
+    # 5. scipy: keep only sparse + special (xgboost needs scipy.special.softmax) + _lib
     scipy_dir = os.path.join(sitepkgs, 'scipy')
     if os.path.isdir(scipy_dir):
-        keep = {'__init__.py', '__pycache__', '_lib', 'sparse'}
+        keep = {'__init__.py', '__pycache__', '_lib', 'sparse', 'special', 'linalg'}
         for item in os.listdir(scipy_dir):
             item_path = os.path.join(scipy_dir, item)
             if os.path.isdir(item_path) and item not in keep:
@@ -114,7 +112,7 @@ def clean():
                 total_saved += sz
                 print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
 
-    # 5. sklearn: remove datasets (built-in data), tests
+    # 6. sklearn: remove tests
     sklearn_dir = os.path.join(sitepkgs, 'sklearn')
     if os.path.isdir(sklearn_dir):
         for item in os.listdir(sklearn_dir):
@@ -124,9 +122,8 @@ def clean():
                 if saved:
                     total_saved += saved
                     print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
-        # remove datasets (built-in data is large but likely needed... let's keep it)
 
-    # 6. pandas: remove .pyi type stubs, test dirs
+    # 7. pandas: remove .pyi type stubs, test dirs
     pandas_dir = os.path.join(sitepkgs, 'pandas')
     if os.path.isdir(pandas_dir):
         for root, dirs, files in os.walk(pandas_dir):
@@ -143,7 +140,7 @@ def clean():
                         total_saved += saved
                         print(f'  Removed pandas/.../{d} ({saved/1e6:.1f} MB)')
 
-    # 7. numpy: remove test dirs
+    # 8. numpy: remove test dirs
     numpy_dir = os.path.join(sitepkgs, 'numpy')
     if os.path.isdir(numpy_dir):
         for root, dirs, files in os.walk(numpy_dir):
@@ -153,35 +150,38 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed numpy/.../{d} ({saved/1e6:.1f} MB)')
-            break  # only top-level
+            break
 
-    # 8. Remove all .pyi and test dirs across all packages
+    # 9. xgboost: strip GPU/CUDA shared libs (keep CPU inference only)
+    xgb_dir = os.path.join(sitepkgs, 'xgboost')
+    if os.path.isdir(xgb_dir):
+        for root, dirs, files in os.walk(xgb_dir):
+            for f in files:
+                if 'cuda' in f.lower() or 'nccl' in f.lower() or 'gpu' in f.lower():
+                    fp = os.path.join(root, f)
+                    sz = os.path.getsize(fp)
+                    os.remove(fp)
+                    total_saved += sz
+                    print(f'  Removed xgboost/{f} ({sz/1e6:.1f} MB)')
+            for d in list(dirs):
+                if 'cuda' in d.lower() or 'nccl' in d.lower() or 'gpu' in d.lower():
+                    saved = rm(os.path.join(root, d))
+                    if saved:
+                        total_saved += saved
+                        print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
+
+    # 10. Remove all __pycache__ and .pyc
     for root, dirs, files in os.walk(sitepkgs):
-        # remove test dirs
         for d in list(dirs):
-            if d == 'tests' or d == 'test':
+            if d == '__pycache__':
                 saved = rm(os.path.join(root, d))
                 if saved:
                     total_saved += saved
-            elif d == '__pycache__':
-                saved = rm(os.path.join(root, d))
-                if saved:
-                    total_saved += saved
-        # remove .pyc files
         for f in files:
             if f.endswith('.pyc'):
                 fp = os.path.join(root, f)
-                sz = os.path.getsize(fp)
+                total_saved += os.path.getsize(fp)
                 os.remove(fp)
-                total_saved += sz
-
-    # 9. Remove dist-info RECORD/METADATA (small but every bit helps)
-    for item in os.listdir(sitepkgs):
-        if item.endswith('.dist-info'):
-            for f in ('RECORD', 'METADATA', 'INSTALLER', 'REQUESTED', 'WHEEL'):
-                fp = os.path.join(sitepkgs, item, f)
-                if os.path.isfile(fp):
-                    os.remove(fp)
 
     print()
     print(f'Total saved: {total_saved / 1e6:.1f} MB')
