@@ -159,7 +159,7 @@ def clean():
                         total_saved += saved
                         print(f'  Removed pandas/.../{d} ({saved/1e6:.1f} MB)')
 
-    # 8. numpy: remove test dirs
+    # 8. numpy: remove test dirs, C headers (not needed at runtime), .pyi stubs
     numpy_dir = os.path.join(sitepkgs, 'numpy')
     if os.path.isdir(numpy_dir):
         for root, dirs, files in os.walk(numpy_dir):
@@ -170,6 +170,18 @@ def clean():
                         total_saved += saved
                         print(f'  Removed numpy/.../{d} ({saved/1e6:.1f} MB)')
             break
+        saved = rm(os.path.join(numpy_dir, 'core', 'include'))
+        if saved:
+            total_saved += saved
+            print(f'  Removed numpy/core/include ({saved/1e6:.1f} MB)')
+        # numpy .pyi stubs
+        for root, dirs, files in os.walk(numpy_dir):
+            for f in files:
+                if f.endswith('.pyi'):
+                    fp = os.path.join(root, f)
+                    sz = os.path.getsize(fp)
+                    os.remove(fp)
+                    total_saved += sz
 
     # 9. xgboost: strip GPU/CUDA shared libs (keep CPU inference only)
     xgb_dir = os.path.join(sitepkgs, 'xgboost')
@@ -189,7 +201,15 @@ def clean():
                         total_saved += saved
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
 
-    # 10. Remove all __pycache__ and .pyc
+    # 10. Remove all .pyi stubs globally
+    for root, dirs, files in os.walk(sitepkgs):
+        for f in files:
+            if f.endswith('.pyi'):
+                fp = os.path.join(root, f)
+                total_saved += os.path.getsize(fp)
+                os.remove(fp)
+
+    # 11. Remove all __pycache__ and .pyc
     for root, dirs, files in os.walk(sitepkgs):
         for d in list(dirs):
             if d == '__pycache__':
