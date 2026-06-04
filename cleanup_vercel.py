@@ -211,6 +211,7 @@ def clean():
             libs_dir = os.path.join(sitepkgs, item)
             if os.path.isdir(parent_dir):
                 target = os.path.join(parent_dir, '.libs')
+                os.makedirs(target, exist_ok=True)
                 for f in os.listdir(libs_dir):
                     shutil.move(os.path.join(libs_dir, f), os.path.join(target, f))
                 total_saved += rm(libs_dir)
