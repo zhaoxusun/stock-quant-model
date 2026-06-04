@@ -1,5 +1,6 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; position: sticky; top: 0; z-index: 100; background: rgba(10,14,23,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; position: sticky; top: 0; z-index: 100; background: rgba(10,14,23,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); font-family: 'Inter', -apple-system, sans-serif; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1280px; margin: 0 auto; width: 100%; }
 .logo { font-family: 'Orbitron','Segoe UI',monospace; font-size: 0.85rem; letter-spacing: 4px; text-transform: uppercase; color: #00d4ff; text-shadow: 0 0 20px rgba(0,212,255,0.3); }
 .header-nav { display: flex; gap: 16px; font-size: 0.78rem; }
@@ -12,9 +13,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   <div class="header-inner">
     <div class="logo" data-i18n="logo">✦ Quant AI Signal</div>
     <div class="header-nav">
-      <a href="/about" data-i18n="nav_about">关于</a>
       <a href="/blog" data-i18n="nav_blog">博客</a>
-      <a href="/privacy" data-i18n="nav_privacy">隐私</a>
     </div>
     <button class="lang-btn" onclick="switchLang()" id="langBtn">EN</button>
   </div>
