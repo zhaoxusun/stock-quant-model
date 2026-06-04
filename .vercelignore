@@ -7,3 +7,4 @@ util_csv.py
 LICENSE
 __pycache__/
 *.pyc
+ml/models/*/model.pkl
