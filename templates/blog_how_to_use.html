@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant AI Signal 使用指南 · Quant AI Signal</title>
+<meta name="description" content="详细解读 Quant AI Signal 的四种交易信号含义、K 线图分析方法及使用注意事项。适合量化交易入门用户。">
+<style>
+:root { --accent-cyan: #00d4ff; --accent-green: #00ff88; --accent-orange: #ff9944; --accent-red: #ff4466; --text-body: rgba(200,220,255,0.75); --text-dim: rgba(200,220,255,0.4); --bg: #0a0e17; }
+body { font-family: -apple-system,'Segoe UI',monospace; background: var(--bg); color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.8; }
+h1 { color: var(--accent-cyan); font-size: 1.4rem; }
+h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 32px; border-left: 3px solid var(--accent-green); padding-left: 12px; }
+h3 { color: var(--accent-cyan); font-size: 0.95rem; margin-top: 24px; }
+p, li { color: var(--text-body); font-size: 0.9rem; }
+a { color: var(--accent-cyan); }
+strong { color: #e0ecff; }
+code { background: rgba(0,180,255,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+.signal-box { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
+.signal-buy { background: rgba(0,255,136,0.15); color: var(--accent-green); border: 1px solid rgba(0,255,136,0.3); }
+.signal-sell { background: rgba(255,68,102,0.15); color: var(--accent-red); border: 1px solid rgba(255,68,102,0.3); }
+.signal-strong-buy { background: rgba(0,255,136,0.25); color: #00ff88; border: 1px solid var(--accent-green); }
+.signal-strong-sell { background: rgba(255,68,102,0.25); color: #ff4466; border: 1px solid var(--accent-red); }
+.footer-links { margin-top: 48px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 0.85rem; }
+.footer-links a { margin: 0 10px; }
+</style>
+</head>
+<body>
+<h1>📖 Quant AI Signal 使用指南</h1>
+<p style="color:var(--text-dim);">最后更新：2026 年 6 月 3 日</p>
+
+<h2>什么是 Quant AI Signal？</h2>
+<p>Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种交易信号，帮助投资者更全面地理解市场状态。</p>
+<p>与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
+
+<h2>四种交易信号解读</h2>
+
+<h3><span class="signal-box signal-buy">买入</span> Normal Buy</h3>
+<p>模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前具备一定的上涨动能，可予以关注。</p>
+
+<h3><span class="signal-box signal-strong-buy">强买</span> Strong Buy</h3>
+<p>多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：市场情绪较为乐观，上涨动能较强。</p>
+
+<h3><span class="signal-box signal-sell">卖出</span> Normal Sell</h3>
+<p>模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：短期可能存在回调风险。</p>
+
+<h3><span class="signal-box signal-strong-sell">强卖</span> Strong Sell</h3>
+<p>多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：下行风险较大，需谨慎对待。</p>
+
+<div style="background:rgba(255,180,50,0.08);border:1px solid rgba(255,180,50,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;">
+  <strong>⚠ 重要提示：</strong> 所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。
+</div>
+
+<h2>如何使用本工具</h2>
+
+<h3>第一步：输入股票代码</h3>
+<p>在首页搜索框中输入股票代码，支持四种市场格式：</p>
+<ul>
+  <li><strong>A 股</strong>：<code>SH.600519</code>（上海）/ <code>SZ.000001</code>（深圳）</li>
+  <li><strong>港股</strong>：<code>HK.00700</code></li>
+  <li><strong>美股</strong>：<code>US.AAPL</code></li>
+</ul>
+
+<h3>第二步：查看分析结果</h3>
+<p>提交后，系统会加载 XGBoost 模型并获取最近约 3 年的历史行情数据进行推理。分析结果包含：</p>
+<ul>
+  <li><strong>最新信号</strong>：当前交易日的最新信号类型和概率</li>
+  <li><strong>近一周信号详情</strong>：最近 5 个交易日的信号列表</li>
+  <li><strong>信号统计</strong>：历史信号的整体分布和有信号日占比</li>
+  <li><strong>信号概率分布图</strong>：近一周每个交易日的四种信号概率柱状图</li>
+  <li><strong>K 线图</strong>：带信号标记的蜡烛图，直观展示价格走势与信号的关系</li>
+  <li><strong>信号时间线</strong>：全部交易日信号趋势图</li>
+  <li><strong>信号明细表</strong>：所有交易日的逐日信号数据</li>
+</ul>
+
+<h3>第三步：结合 K 线图进行分析</h3>
+<p>K 线图中使用不同颜色标记信号发生的位置：</p>
+<ul>
+  <li><strong style="color:#00ff88;">绿色箭头 ↑</strong> — 买入信号</li>
+  <li><strong style="color:#00ff88;">绿色三角 ▲</strong> — 强买信号</li>
+  <li><strong style="color:#ff4466;">红色箭头 ↓</strong> — 卖出信号</li>
+  <li><strong style="color:#ff4466;">红色三角 ▼</strong> — 强卖信号</li>
+</ul>
+
+<h2>数据来源与更新频率</h2>
+<ul>
+  <li><strong>数据来源</strong>：akshare（A 股/港股/美股）、baostock（沪深）</li>
+  <li><strong>更新频率</strong>：每日收盘后自动更新一次，T+1 日可查询</li>
+  <li><strong>回测范围</strong>：最近约 3 年的历史数据（约 750 个交易日）</li>
+</ul>
+
+<h2>常见问题</h2>
+
+<h3>信号准确率如何？</h3>
+<p>模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的交易依据。</p>
+
+<h3>为什么有些股票没有信号？</h3>
+<p>部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
+
+<h3>工具免费使用吗？</h3>
+<p>是的，Quant AI Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
+
+<div class="footer-links">
+  <a href="/">← 返回首页</a>
+  <a href="/about">关于本站</a>
+  <a href="/privacy">隐私政策</a>
+  <a href="/terms">服务条款</a>
+</div>
+</body>
+</html>
