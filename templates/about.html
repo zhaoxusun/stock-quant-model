@@ -45,6 +45,13 @@ const LANG = {
     source_p: '数据来源覆盖 akshare（A 股/港股/美股）与 baostock（沪深），实时获取公开行情。所有运算在服务端完成，无需本地计算资源。',
     disclaimer_h: '免责声明',
     disclaimer_p: '本工具仅供学习研究使用。所有输出信号均为模型推断结果，不构成任何投资建议。过往表现不代表未来收益。投资有风险，入市需谨慎。',
+    back_home: '返回首页',
+    nav_blog: '博客',
+    footer_privacy: '隐私政策',
+    footer_terms: '服务条款',
+    footer_sep: '|',
+    footer_sep2: '·',
+    footer_sep3: '·',
   },
   en: {
     title: 'About · Quant AI Signal',
@@ -55,6 +62,13 @@ const LANG = {
     source_p: 'Data sources include akshare (A/HK/US) and baostock (China A-shares), fetching real-time public quotes. All computation runs server-side with no local resources needed.',
     disclaimer_h: 'Disclaimer',
     disclaimer_p: 'This tool is for educational and research purposes only. All output signals are model inferences and do not constitute investment advice. Past performance does not guarantee future results. Trade at your own risk.',
+    back_home: 'Back to Home',
+    nav_blog: 'Blog',
+    footer_privacy: 'Privacy Policy',
+    footer_terms: 'Terms of Service',
+    footer_sep: '|',
+    footer_sep2: '·',
+    footer_sep3: '·',
   }
 };
 
@@ -81,5 +95,15 @@ function switchLang() {
 }
 translatePage();
 </script>
+<footer style="text-align:center;padding:2px 16px 4px;margin-top:80px;color:var(--text-dim);font-size:0.78rem;">
+  <p><a href="/" style="color:var(--accent-cyan);">← <span data-i18n="back_home">返回首页</span></a>
+    <span data-i18n="footer_sep">|</span>
+    <a href="/privacy" style="color:var(--accent-cyan);" data-i18n="footer_privacy">隐私政策</a>
+    <span data-i18n="footer_sep2">·</span>
+    <a href="/blog" style="color:var(--accent-cyan);" data-i18n="nav_blog">博客</a>
+    <span data-i18n="footer_sep3">·</span>
+    <a href="/terms" style="color:var(--accent-cyan);" data-i18n="footer_terms">服务条款</a>
+  </p>
+</footer>
 </body>
 </html>
