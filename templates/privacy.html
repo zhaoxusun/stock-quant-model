@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="title">隐私政策 · Quant AI Signal</title>
+<title data-i18n="privacy_title">隐私政策 · Quant AI Signal</title>
 <style>
 :root { --accent-cyan: #00d4ff; --accent-green: #00ff88; --text-body: rgba(200,220,255,0.75); --text-dim: rgba(200,220,255,0.4); --bg: #0a0e17; }
-body { font-family: -apple-system,'Segoe UI',monospace; background: var(--bg); color: #c8dcff; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.8; }
+body { font-family: -apple-system,'Segoe UI',monospace; background: var(--bg); color: #c8dcff; margin: 0; padding: 0; line-height: 1.8; }
+.content-wrap { max-width: 720px; margin: 40px auto; padding: 0 20px; }
 h1 { color: var(--accent-cyan); }
 h2 { color: var(--accent-green); font-size: 1.1rem; margin-top: 28px; }
 p, li { color: var(--text-body); font-size: 0.9rem; }
@@ -15,8 +16,9 @@ a { color: var(--accent-cyan); }
 </head>
 <body>
 {% include '_header.html' %}
-<h1 data-i18n="h1">隐私政策</h1>
-<p data-i18n="updated">最后更新：2026 年 6 月</p>
+<div class="content-wrap">
+<h1 data-i18n="privacy_h1">隐私政策</h1>
+<p data-i18n="privacy_updated">最后更新：2026 年 6 月</p>
 
 <h2 data-i18n="collect_h">信息收集</h2>
 <p data-i18n="collect_p1">本工具仅处理用户输入的股票代码，用于查询公开行情数据并运行模型推理。我们不会收集、存储或分享任何个人身份信息。</p>
@@ -33,83 +35,14 @@ a { color: var(--accent-cyan); }
 <p data-i18n="security_p">所有数据通过 HTTPS 传输。推理过程在服务端完成，结果不持久化存储。</p>
 
 <h2 data-i18n="disclaimer_h">免责声明</h2>
-<p data-i18n="disclaimer_p">本工具输出的所有信号仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。</p>
+<p data-i18n="privacy_disclaimer_p">本工具输出的所有信号仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。</p>
 
 <h2 data-i18n="contact_h">联系我们</h2>
 <p><span id="email"></span></p>
 
 <script>
-const LANG = {
-  zh: {
-    title: '隐私政策 · Quant AI Signal',
-    h1: '隐私政策',
-    updated: '最后更新：2026 年 6 月',
-    collect_h: '信息收集',
-    collect_p1: '本工具仅处理用户输入的股票代码，用于查询公开行情数据并运行模型推理。我们不会收集、存储或分享任何个人身份信息。',
-    collect_p2: '本工具可能通过第三方 API（如 akshare、baostock）获取市场数据，这些请求仅包含股票代码，不包含用户身份信息。',
-    cookie_h: 'Cookie',
-    cookie_p: '本工具不使用 Cookie 跟踪用户行为。',
-    third_h: '第三方服务',
-    third_p1: '本工具使用 Statcounter（<a href="https://statcounter.com" target="_blank">statcounter.com</a>）进行匿名访问统计，收集页面浏览量、设备类型、来源等非个人数据。Statcounter 使用 Cookie 识别独立访客。',
-    third_p2: '本工具可能引入 Google AdSense 广告。Google 可能会使用 Cookie 向您展示个性化广告，详情请参阅 <a href="https://policies.google.com/privacy" target="_blank">Google 隐私政策</a>。',
-    security_h: '数据安全',
-    security_p: '所有数据通过 HTTPS 传输。推理过程在服务端完成，结果不持久化存储。',
-    disclaimer_h: '免责声明',
-    disclaimer_p: '本工具输出的所有信号仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。',
-    contact_h: '联系我们',
-    logo: '✦ Quant AI Signal',
-    nav_about: '关于',
-    nav_blog: '博客',
-    nav_privacy: '隐私',
-  },
-  en: {
-    title: 'Privacy Policy · Quant AI Signal',
-    h1: 'Privacy Policy',
-    updated: 'Last updated: June 2026',
-    collect_h: 'Information Collection',
-    collect_p1: 'This tool only processes stock codes entered by the user to query public market data and run model inference. We do not collect, store, or share any personally identifiable information.',
-    collect_p2: 'This tool may retrieve market data via third-party APIs (e.g., akshare, baostock). These requests contain only stock codes and no user identity information.',
-    cookie_h: 'Cookies',
-    cookie_p: 'This tool does not use cookies to track user behavior.',
-    third_h: 'Third-Party Services',
-    third_p1: 'This tool uses Statcounter (<a href="https://statcounter.com" target="_blank">statcounter.com</a>) for anonymous visitor analytics, collecting page views, device type, referrer, and other non-personal data. Statcounter uses cookies to identify unique visitors.',
-    third_p2: 'This tool may display Google AdSense ads. Google may use cookies to serve personalized ads. See <a href="https://policies.google.com/privacy" target="_blank">Google\'s Privacy Policy</a> for details.',
-    security_h: 'Data Security',
-    security_p: 'All data is transmitted via HTTPS. Model inference runs server-side; results are not persisted.',
-    disclaimer_h: 'Disclaimer',
-    disclaimer_p: 'All signals output by this tool are for reference only and do not constitute investment advice. Trading involves risk.',
-    contact_h: 'Contact Us',
-    logo: '✦ Quant AI Signal',
-    nav_about: 'About',
-    nav_blog: 'Blog',
-    nav_privacy: 'Privacy',
-  }
-};
-
-let currentLang = localStorage.getItem('lang') || 'zh';
-function t(key) {
-  const v = LANG[currentLang] ? LANG[currentLang][key] : LANG['zh'][key];
-  return typeof v === 'function' ? v : (v || key);
-}
-function translatePage() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (key === 'third_p1' || key === 'third_p2') {
-      el.innerHTML = t(key);
-    } else {
-      el.textContent = t(key);
-    }
-  });
-  document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
-}
-function switchLang() {
-  currentLang = currentLang === 'zh' ? 'en' : 'zh';
-  localStorage.setItem('lang', currentLang);
-  translatePage();
-}
-translatePage();
-
 document.getElementById('email').textContent = ['zhaoxu', '0604', '@', 'gmail', '.com'].join('');
 </script>
+</div>
 </body>
 </html>
