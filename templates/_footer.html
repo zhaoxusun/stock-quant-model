@@ -1,0 +1,11 @@
+<footer>
+  <p>© <span class="copyright-year">2026</span> <span data-i18n="copyright">Quant AI Signal. All rights reserved.</span></p>
+  <p>
+    <a href="/privacy" data-i18n="footer_privacy">隐私政策</a> <span data-i18n="footer_sep">|</span>
+    <a href="/terms" data-i18n="footer_terms">服务条款</a> <span data-i18n="footer_sep">|</span>
+    <a href="/about" data-i18n="footer_about">关于</a>
+  </p>
+</footer>
+<script>
+document.querySelectorAll('.copyright-year').forEach(el => el.textContent = new Date().getFullYear());
+</script>
