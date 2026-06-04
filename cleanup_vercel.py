@@ -314,6 +314,8 @@ def clean():
     print(f'Total saved: {total_saved / 1e6:.1f} MB')
     total_after = dir_size(sitepkgs)
     print(f'Total AFTER:  {total_after / 1e6:.1f} MB')
+    if os.path.isdir(xgb_pkgs):
+        print(f'xgb_pkgs AFTER: {dir_size(xgb_pkgs) / 1e6:.1f} MB')
     print('Cleanup done')
 
 
