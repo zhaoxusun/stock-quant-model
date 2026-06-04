@@ -203,7 +203,20 @@ def clean():
                         total_saved += saved
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
 
-    # 10. Remove all .pyi stubs globally
+    # 10. Move .libs directories INTO parent package (so Vercel defers them with the package)
+    for item in list(os.listdir(sitepkgs)):
+        if item.endswith('.libs') and os.path.isdir(os.path.join(sitepkgs, item)):
+            parent_name = item[:-5]  # e.g., numpy.libs -> numpy
+            parent_dir = os.path.join(sitepkgs, parent_name)
+            libs_dir = os.path.join(sitepkgs, item)
+            if os.path.isdir(parent_dir):
+                target = os.path.join(parent_dir, '.libs')
+                for f in os.listdir(libs_dir):
+                    shutil.move(os.path.join(libs_dir, f), os.path.join(target, f))
+                total_saved += rm(libs_dir)
+                print(f'  Moved {item}/ into {parent_name}/.libs/')
+
+    # 11. Remove all .pyi stubs globally
     for root, dirs, files in os.walk(sitepkgs):
         for f in files:
             if f.endswith('.pyi'):
