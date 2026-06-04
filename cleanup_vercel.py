@@ -227,7 +227,15 @@ def clean():
     # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
     total_saved += strip_so(sitepkgs)
 
-    # 12. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
+    # 12. Remove dead code files
+    for dead in ('ml/anti_cheat.py',):
+        fp = os.path.join(os.getcwd(), dead)
+        s = rm(fp)
+        if s:
+            total_saved += s
+            print(f'  Removed {dead} ({s/1e6:.1f} MB)')
+
+    # 13. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
@@ -247,6 +255,19 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed xgb_pkgs/{item} ({saved/1e6:.1f} MB)')
+            # Remove bundled helper .so files (provided by system on Lambda)
+            lib_dir = os.path.join(xgb_dir, 'lib')
+            if os.path.isdir(lib_dir):
+                for f in os.listdir(lib_dir):
+                    if f != 'libxgboost.so' and ('.so' in f or f.endswith('.so')):
+                        fp = os.path.join(lib_dir, f)
+                        if not os.path.islink(fp):
+                            sz = os.path.getsize(fp)
+                            os.remove(fp)
+                            total_saved += sz
+                            print(f'  Removed xgb_pkgs/xgboost/lib/{f} ({sz/1e6:.1f} MB)')
+                        else:
+                            os.remove(fp)
             # Strip GPU/CUDA files
             for root, dirs, files in os.walk(xgb_dir):
                 for f in files:
