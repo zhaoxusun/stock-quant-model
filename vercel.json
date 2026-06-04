@@ -4,6 +4,7 @@
     "UV_NO_CACHE": "1",
     "VERCEL_ANALYZE_BUILD_OUTPUT": "1"
   },
+  "buildCommand": "python3 cleanup_vercel.py || true",
   "routes": [
     {
       "src": "/(.*)",
