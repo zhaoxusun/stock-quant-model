@@ -1,4 +1,9 @@
 {
+  "env": {
+    "UV_COMPILE_BYTECODE": "0",
+    "UV_NO_CACHE": "1",
+    "VERCEL_ANALYZE_BUILD_OUTPUT": "1"
+  },
   "routes": [
     {
       "src": "/(.*)",

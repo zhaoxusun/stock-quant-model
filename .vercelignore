@@ -1,5 +1,4 @@
 ml/train.py
-ml/test_model.py
 stock/utils.py
 util_csv.py
 **.md
