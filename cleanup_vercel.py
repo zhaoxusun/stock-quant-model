@@ -119,15 +119,16 @@ def clean():
     # 5. scipy: keep only sparse + special (xgboost needs scipy.special.softmax) + _lib
     scipy_dir = os.path.join(sitepkgs, 'scipy')
     if os.path.isdir(scipy_dir):
-        keep = {'__init__.py', '__pycache__', '_lib', 'sparse', 'special', 'linalg'}
+        keep_dirs = {'_lib', 'sparse', 'special', 'linalg'}
+        keep_files = {'__init__.py', '__config__.py', 'version.py', '_distributor_init.py'}
         for item in os.listdir(scipy_dir):
             item_path = os.path.join(scipy_dir, item)
-            if os.path.isdir(item_path) and item not in keep:
+            if os.path.isdir(item_path) and item not in keep_dirs:
                 sz = dir_size(item_path)
                 shutil.rmtree(item_path)
                 total_saved += sz
                 print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
-            elif os.path.isfile(item_path) and item not in keep:
+            elif os.path.isfile(item_path) and item not in keep_files:
                 sz = os.path.getsize(item_path)
                 os.remove(item_path)
                 total_saved += sz
@@ -202,20 +203,6 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
-
-    # 10. Move .libs directories INTO parent package (so Vercel defers them with the package)
-    for item in list(os.listdir(sitepkgs)):
-        if item.endswith('.libs') and os.path.isdir(os.path.join(sitepkgs, item)):
-            parent_name = item[:-5]  # e.g., numpy.libs -> numpy
-            parent_dir = os.path.join(sitepkgs, parent_name)
-            libs_dir = os.path.join(sitepkgs, item)
-            if os.path.isdir(parent_dir):
-                target = os.path.join(parent_dir, '.libs')
-                os.makedirs(target, exist_ok=True)
-                for f in os.listdir(libs_dir):
-                    shutil.move(os.path.join(libs_dir, f), os.path.join(target, f))
-                total_saved += rm(libs_dir)
-                print(f'  Moved {item}/ into {parent_name}/.libs/')
 
     # 11. Remove all .pyi stubs globally
     for root, dirs, files in os.walk(sitepkgs):
