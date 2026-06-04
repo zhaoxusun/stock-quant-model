@@ -677,14 +677,6 @@
     </div>
   </div>
 
-  <footer>
-    <div style="margin-bottom:8px;" data-i18n="footer">Quant AI Signal Engine — XGBoost Multi-Label Classifier</div>
-    <div style="font-size:0.75rem;color:rgba(200,220,255,0.35);display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <a href="/privacy" style="color:inherit;" data-i18n="footer_privacy">隐私政策</a>
-      <a href="/about" style="color:inherit;" data-i18n="footer_about">关于本站</a>
-      <a href="/terms" style="color:inherit;" data-i18n="footer_terms">服务条款</a>
-    </div>
-  </footer>
 </div>
 
 <script>
@@ -734,6 +726,10 @@ const LANG = {
     footer_privacy: '隐私政策',
     footer_about: '关于本站',
     footer_terms: '服务条款',
+    footer_sep: '|',
+    footer_sep2: '·',
+    footer_sep3: '·',
+    copyright: 'Quant AI Signal. All rights reserved.',
     nb: '普通买入',
     ns: '普通卖出',
     sb: '强买入',
@@ -795,6 +791,10 @@ const LANG = {
     footer_privacy: 'Privacy Policy',
     footer_about: 'About',
     footer_terms: 'Terms of Service',
+    footer_sep: '|',
+    footer_sep2: '·',
+    footer_sep3: '·',
+    copyright: 'Quant AI Signal. All rights reserved.',
     nb: 'Normal Buy',
     ns: 'Normal Sell',
     sb: 'Strong Buy',
@@ -1478,13 +1478,13 @@ window.addEventListener('resize', () => {
   if (klineChartInstance) klineChartInstance.resize();
 });
 
-document.querySelector('footer .year').textContent = new Date().getFullYear();
+document.querySelectorAll('.copyright-year').forEach(el => el.textContent = new Date().getFullYear());
 </script>
 <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(0,180,255,0.1);margin-top:40px;color:var(--text-dim);font-size:0.78rem;">
-  <p>© <span class="year">2026</span> Quant AI Signal. All rights reserved. |
-    <a href="/privacy" style="color:var(--accent-cyan);">隐私政策</a> ·
-    <a href="/terms" style="color:var(--accent-cyan);">服务条款</a> ·
-    <a href="/about" style="color:var(--accent-cyan);">关于</a>
+  <p>© <span class="copyright-year">2026</span> <span data-i18n="copyright">Quant AI Signal. All rights reserved.</span> <span data-i18n="footer_sep">|</span>
+    <a href="/privacy" style="color:var(--accent-cyan);" data-i18n="footer_privacy">隐私政策</a> <span data-i18n="footer_sep2">·</span>
+    <a href="/terms" style="color:var(--accent-cyan);" data-i18n="footer_terms">服务条款</a> <span data-i18n="footer_sep3">·</span>
+    <a href="/about" style="color:var(--accent-cyan);" data-i18n="footer_about">关于</a>
   </p>
 </footer>
 <!-- Default Statcounter code for quant-test.top -->
