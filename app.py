@@ -3,6 +3,7 @@ import sys
 
 _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _PROJECT_ROOT)
+os.environ.setdefault('CACHE_DIR', '/tmp')
 
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
@@ -59,3 +60,6 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"  🚀 启动服务: http://127.0.0.1:{port}")
     app.run(host='0.0.0.0', port=port, debug=True)
+
+
+handler = app
