@@ -6,4 +6,3 @@ ml/anti_cheat.py
 LICENSE
 __pycache__/
 *.pyc
-ml/models/*/model.pkl
