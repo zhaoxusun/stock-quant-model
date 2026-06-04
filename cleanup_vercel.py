@@ -183,6 +183,38 @@ def clean():
                 total_saved += os.path.getsize(fp)
                 os.remove(fp)
 
+    # 11. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
+    xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
+    if os.path.isdir(xgb_pkgs):
+        xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
+        if os.path.isdir(xgb_dir):
+            for root, dirs, files in os.walk(xgb_dir):
+                for f in files:
+                    if 'cuda' in f.lower() or 'nccl' in f.lower() or 'gpu' in f.lower():
+                        fp = os.path.join(root, f)
+                        sz = os.path.getsize(fp)
+                        os.remove(fp)
+                        total_saved += sz
+                        print(f'  Removed xgb_pkgs/xgboost/{f} ({sz/1e6:.1f} MB)')
+                for d in list(dirs):
+                    if 'cuda' in d.lower() or 'nccl' in d.lower() or 'gpu' in d.lower():
+                        saved = rm(os.path.join(root, d))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed xgb_pkgs/xgboost/{d} ({saved/1e6:.1f} MB)')
+        # Strip .pyc and __pycache__ from xgb_pkgs too
+        for root, dirs, files in os.walk(xgb_pkgs):
+            for d in list(dirs):
+                if d == '__pycache__':
+                    saved = rm(os.path.join(root, d))
+                    if saved:
+                        total_saved += saved
+            for f in files:
+                if f.endswith('.pyc'):
+                    fp = os.path.join(root, f)
+                    total_saved += os.path.getsize(fp)
+                    os.remove(fp)
+
     print()
     print(f'Total saved: {total_saved / 1e6:.1f} MB')
     total_after = dir_size(sitepkgs)
