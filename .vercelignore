@@ -1,3 +1,4 @@
+ml/data/
 ml/train.py
 stock/utils.py
 util_csv.py
