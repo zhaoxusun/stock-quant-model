@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 from logging.handlers import TimedRotatingFileHandler
 from settings import log_root
 import logging
@@ -7,8 +8,13 @@ import logging
 RUN_UUID = str(uuid.uuid4())
 
 def create_log(name):
-    # 确保日志目录存在
-    log_root.mkdir(parents=True, exist_ok=True)
+    # 确保日志目录存在（read-only fs 时 fallback 到 /tmp/log）
+    try:
+        log_root.mkdir(parents=True, exist_ok=True)
+        _log_dir = log_root
+    except OSError:
+        _log_dir = Path('/tmp') / 'log'
+        _log_dir.mkdir(parents=True, exist_ok=True)
 
     # 创建logger对象
     logger = logging.getLogger(name)
@@ -33,7 +39,7 @@ def create_log(name):
     logger.addHandler(console_handler)
 
     # 创建文件处理器 - 按日期轮转，保留7天日志
-    log_file = log_root / f'{name}.log'
+    log_file = _log_dir / f'{name}.log'
     file_handler = TimedRotatingFileHandler(
         filename=log_file,
         when='midnight',  # 在每天午夜轮转

@@ -11,7 +11,6 @@ os.environ.setdefault('CACHE_DIR', '/tmp')
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
-from ml.test_model import test_single_stock
 from ml.api_rate_limiter import RateLimitError, resolve_client_ip
 
 app = Flask(__name__)
@@ -44,6 +43,7 @@ def predict():
         return jsonify({"success": False, "message": "股票代码不能为空"}), 400
 
     try:
+        from ml.test_model import test_single_stock
         client_ip = resolve_client_ip(request)
         result = test_single_stock(code, strategy, client_ip=client_ip)
         if result is None:
