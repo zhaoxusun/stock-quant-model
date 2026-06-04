@@ -128,7 +128,7 @@ def clean():
                 shutil.rmtree(item_path)
                 total_saved += sz
                 print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
-            elif os.path.isfile(item_path) and item not in keep_files:
+            elif os.path.isfile(item_path) and item not in keep_files and not item.endswith(('.so', '.pyd')):
                 sz = os.path.getsize(item_path)
                 os.remove(item_path)
                 total_saved += sz
