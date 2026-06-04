@@ -15,8 +15,6 @@
 <div class="bg-gradient"></div>
 
 <div class="container">
-  <div class="disclaimer" data-i18n="disclaimer">⚠ 本系统所有信号仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。</div>
-
   <div class="search-section">
     <div class="search-box">
       <input type="text" id="stockCode" data-i18n="placeholder" placeholder="输入股票代码，如 SH.600519 / SZ.000001 / HK.00700 / US.AAPL" spellcheck="false" autocomplete="off">
@@ -748,13 +746,7 @@ window.addEventListener('resize', () => {
 
 document.querySelectorAll('.copyright-year').forEach(el => el.textContent = new Date().getFullYear());
 </script>
-<footer style="margin-top:300px">
-  <p>© <span class="copyright-year">2026</span> <span data-i18n="copyright">Quant AI Signal. All rights reserved.</span> <span data-i18n="footer_sep">|</span>
-    <a href="/privacy" style="color:var(--accent-cyan);" data-i18n="footer_privacy">隐私政策</a> <span data-i18n="footer_sep2">·</span>
-    <a href="/terms" style="color:var(--accent-cyan);" data-i18n="footer_terms">服务条款</a> <span data-i18n="footer_sep3">·</span>
-    <a href="/about" style="color:var(--accent-cyan);" data-i18n="footer_about">关于</a> <span data-i18n="footer_sep4">·</span>
-  </p>
-</footer>
+{% include '_footer.html' %}
 <!-- Default Statcounter code for quant-test.top -->
 <script type="text/javascript">
 var sc_project=13272736;
