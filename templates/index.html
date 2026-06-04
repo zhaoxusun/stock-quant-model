@@ -133,6 +133,21 @@
     margin: 30px auto 20px;
   }
 
+  .nav-links {
+    text-align: center;
+    margin: 0 auto 24px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent-cyan); }
+
   .search-box {
     display: flex;
     gap: 0;
@@ -580,6 +595,12 @@
     </div>
   </div>
 
+  <div class="nav-links">
+    <a href="/about" data-i18n="nav_about">关于</a>
+    <a href="/blog" data-i18n="nav_blog">博客</a>
+    <a href="/privacy" data-i18n="nav_privacy">隐私</a>
+  </div>
+
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <div class="loading-text" data-i18n="loading">正在加载模型并推理信号…</div>
@@ -740,6 +761,9 @@ const LANG = {
     stock_time: '⚡ ',
     kline: 'K 线',
     volume: '成交量',
+    nav_about: '关于',
+    nav_blog: '博客',
+    nav_privacy: '隐私',
   },
   en: {
     logo: '✦ Quant AI Signal · Smart Quant Signal Analysis',
@@ -804,6 +828,9 @@ const LANG = {
     stock_time: '⚡ ',
     kline: 'Candlestick',
     volume: 'Volume',
+    nav_about: 'About',
+    nav_blog: 'Blog',
+    nav_privacy: 'Privacy',
   }
 };
 
