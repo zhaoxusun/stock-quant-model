@@ -8,7 +8,8 @@ if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, make_response
+
 from flask_cors import CORS
 
 from ml.api_rate_limiter import RateLimitError, resolve_client_ip
@@ -32,6 +33,26 @@ def about():
 @app.route('/terms')
 def terms():
     return render_template('terms.html')
+
+@app.route('/blog')
+def blog():
+    return render_template('blog.html')
+
+@app.route('/blog/how-to-use')
+def blog_how_to_use():
+    return render_template('blog_how_to_use.html')
+
+@app.route('/robots.txt')
+def robots_txt():
+    resp = make_response(render_template('robots_txt.html'))
+    resp.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    return resp
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    resp = make_response(render_template('sitemap_xml.html'))
+    resp.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return resp
 
 
 @app.route('/api/predict', methods=['POST'])
