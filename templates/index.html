@@ -230,7 +230,8 @@ function renderBarChart(rw) {
   if (barChart) barChart.dispose();
   barChart = echarts.init(document.getElementById('barLatestProbs'));
 
-  const cats = sigTypes.map(st => t(sigLabels[st]));
+  const isMobile = window.innerWidth < 600;
+  const cats = sigTypes.map(st => t(sigShorts[st]));
   const probs = sigTypes.map(st => rw && rw.avg_probs ? +(rw.avg_probs['prob_' + st] * 100).toFixed(1) : 0);
   const hasSig = sigTypes.map(st => rw && rw.signal_counts ? rw.signal_counts[st] > 0 : 0);
   const colors = sigTypes.map(st => hasSig[sigTypes.indexOf(st)] ? sigColors[st] : 'rgba(200,220,255,0.2)');
@@ -242,11 +243,11 @@ function renderBarChart(rw) {
       borderColor: 'rgba(0,180,255,0.2)',
       textStyle: { color: '#e8f0ff', fontSize: 12 }
     },
-    grid: { top: 20, bottom: 40, left: 10, right: 10, containLabel: true },
+    grid: { top: 20, bottom: isMobile ? 60 : 45, left: 10, right: 10, containLabel: true },
     xAxis: {
       type: 'category',
       data: cats,
-      axisLabel: { color: 'rgba(200,220,255,0.6)', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" },
+      axisLabel: { color: 'rgba(200,220,255,0.6)', fontSize: isMobile ? 8 : 10, fontFamily: "'JetBrains Mono', monospace" },
       axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
       axisTick: { show: false }
     },

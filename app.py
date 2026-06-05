@@ -18,6 +18,14 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/.well-known/appspecific/com.chrome.devtools.json')
+def chrome_devtools():
+    return '', 204
+
 @app.route('/')
 def index():
     return render_template('index.html')
