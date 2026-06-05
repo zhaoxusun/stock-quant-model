@@ -16,22 +16,22 @@
 <p style="color:var(--text-dim);" data-i18n="bht_updated">最后更新：2026 年 6 月 3 日</p>
 
 <h2 data-i18n="bht_what_h">什么是 Quant AI Signal？</h2>
-<p data-i18n="what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
-<p data-i18n="what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
+<p data-i18n="bht_what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的模型推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
+<p data-i18n="bht_what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
 
 <h2 data-i18n="signals_h">四种参考信号解读</h2>
 
 <h3><span class="signal-box signal-buy" data-i18n="signal_buy_label">正向信号</span> <span data-i18n="signal_buy_en">Positive</span></h3>
-<p data-i18n="signal_buy_desc">模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前模型综合特征指向偏积极方向。</p>
+<p data-i18n="signal_buy_desc">模型检测到价格与成交量呈特定统计模式，多项技术指标处于合理区间。信号含义：当前模型综合特征指向偏积极方向。</p>
 
 <h3><span class="signal-box signal-strong-buy" data-i18n="signal_strong_buy_label">强正向信号</span> <span data-i18n="signal_strong_buy_en">Strong Positive</span></h3>
-<p data-i18n="signal_strong_buy_desc">多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：多项特征同时指向积极方向。</p>
+<p data-i18n="signal_strong_buy_desc">多个维度的特征同时指向积极方向：均线关系呈特定排列、成交量显著变化、多项技术指标共振。信号含义：多项特征同时指向积极方向。</p>
 
 <h3><span class="signal-box signal-sell" data-i18n="signal_sell_label">负向信号</span> <span data-i18n="signal_sell_en">Negative</span></h3>
-<p data-i18n="signal_sell_desc">模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：多项特征指向偏保守方向。</p>
+<p data-i18n="signal_sell_desc">模型检测到价格与成交量呈特定统计模式，指标处于高位回落阶段。信号含义：多项特征指向偏保守方向。</p>
 
 <h3><span class="signal-box signal-strong-sell" data-i18n="signal_strong_sell_label">强负向信号</span> <span data-i18n="signal_strong_sell_en">Strong Negative</span></h3>
-<p data-i18n="signal_strong_sell_desc">多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：多项特征同时指向偏谨慎方向。</p>
+<p data-i18n="signal_strong_sell_desc">多个特征同时发出警示：价格运行于关键均线下方、指标显示超买回落或超卖延续、量价关系异常。信号含义：多项特征同时指向偏谨慎方向。</p>
 
 <div style="background:rgba(255,180,50,0.08);border:1px solid rgba(255,180,50,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;">
   <strong data-i18n="warning_label">⚠ 重要提示：</strong> <span data-i18n="warning_text">所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。</span>

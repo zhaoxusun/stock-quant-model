@@ -19,8 +19,8 @@ _RAW_DIR = os.path.join(_PROJECT_ROOT, "ml", "data", "raw", "futu")
 _TABFMT = "fancy_grid"
 
 sig_types = ["normal_buy", "normal_sell", "strong_buy", "strong_sell"]
-sig_labels = {"normal_buy": "普通买(normal_buy)", "normal_sell": "普通卖(normal_sell)",
-              "strong_buy": "强买(strong_buy)", "strong_sell": "强卖(strong_sell)"}
+sig_labels = {"normal_buy": "正向(normal_buy)", "normal_sell": "负向(normal_sell)",
+              "strong_buy": "强正向(strong_buy)", "strong_sell": "强负向(strong_sell)"}
 
 
 def _fmt_tbl(data, headers, aligns, showindex=False):
@@ -322,7 +322,7 @@ def test_compare_with_actual(strategy_name="EnhancedVolumeStrategy"):
 
 def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrategy"):
     """
-    输入股票代码，判断当天（或指定日期）是否有交易信号。
+    输入股票代码，判断当天（或指定日期）是否有参考信号。
 
     Parameters
     ----------
@@ -387,7 +387,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
         signals[st] = (prob_val, sig_val)
 
     has_signal = any(v for _, v in signals.values())
-    status_icon = "⚠️  有交易信号" if has_signal else "✅  无交易信号"
+    status_icon = "⚠️  有参考信号" if has_signal else "✅  无参考信号"
 
     tbl = []
     for st in sig_types:
