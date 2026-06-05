@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="bht_title">Quant Reference Signal 使用指南 · Quant Reference Signal</title>
-<meta name="description" content="详细解读 Quant Reference Signal 的四种参考信号含义、K 线图分析方法及使用注意事项。适合量化分析入门用户。">
+<title data-i18n="bht_title">Quant Model Signal 使用指南 · Quant Model Signal</title>
+<meta name="description" content="详细解读 Quant Model Signal 的四种参考信号含义、K 线图分析方法及使用注意事项。适合量化分析入门用户。">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -12,11 +12,11 @@
 <div class="bg-gradient"></div>
 {% include '_header.html' %}
 <div class="content-wrap">
-<h1 data-i18n="bht_h1">📖 Quant Reference Signal 使用指南</h1>
+<h1 data-i18n="bht_h1">📖 Quant Model Signal 使用指南</h1>
 <p style="color:var(--text-dim);" data-i18n="bht_updated">最后更新：2026 年 6 月 3 日</p>
 
-<h2 data-i18n="bht_what_h">什么是 Quant Reference Signal？</h2>
-<p data-i18n="bht_what_p1">Quant Reference Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的模型推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
+<h2 data-i18n="bht_what_h">什么是 Quant Model Signal？</h2>
+<p data-i18n="bht_what_p1">Quant Model Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的模型推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
 <p data-i18n="bht_what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
 
 <h2 data-i18n="signals_h">四种参考信号解读</h2>
@@ -84,7 +84,7 @@
 <p data-i18n="faq2_a">部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
 
 <h3 data-i18n="faq3_q">工具免费使用吗？</h3>
-<p data-i18n="faq3_a">是的，Quant Reference Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
+<p data-i18n="faq3_a">是的，Quant Model Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
 
 </div>
 {% include '_footer.html' %}
