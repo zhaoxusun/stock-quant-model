@@ -16,10 +16,10 @@
   --text-body: rgba(200,220,255,0.75);
   --text-secondary: rgba(200, 220, 255, 0.7);
   --text-dim: rgba(200,220,255,0.4);
-  --signal-buy: #00ff88;
-  --signal-sell: #ff3355;
-  --signal-strong-buy: #00d4ff;
-  --signal-strong-sell: #ff8800;
+  --signal-pos: #00ff88;
+  --signal-neg: #ff3355;
+  --signal-strong-pos: #00d4ff;
+  --signal-strong-neg: #ff8800;
   --font-display: 'Orbitron', monospace;
   --font-body: 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -495,17 +495,17 @@ h1 {
   font-family: var(--font-mono);
 }
 
-.signal-count-item.normal-buy .label,
-.signal-count-item.normal-buy .value { color: var(--signal-buy); }
+.signal-count-item.normal-pos .label,
+.signal-count-item.normal-pos .value { color: var(--signal-pos); }
 
-.signal-count-item.normal-sell .label,
-.signal-count-item.normal-sell .value { color: var(--signal-sell); }
+.signal-count-item.normal-neg .label,
+.signal-count-item.normal-neg .value { color: var(--signal-neg); }
 
-.signal-count-item.strong-buy .label,
-.signal-count-item.strong-buy .value { color: var(--signal-strong-buy); }
+.signal-count-item.strong-pos .label,
+.signal-count-item.strong-pos .value { color: var(--signal-strong-pos); }
 
-.signal-count-item.strong-sell .label,
-.signal-count-item.strong-sell .value { color: var(--signal-strong-sell); }
+.signal-count-item.strong-neg .label,
+.signal-count-item.strong-neg .value { color: var(--signal-strong-neg); }
 
 /* ===== Signal Table ===== */
 .signal-table-wrap {
@@ -580,10 +580,10 @@ tbody tr:hover { background: rgba(0, 180, 255, 0.04); }
   vertical-align: middle;
 }
 
-.sig-on.buy { background: var(--signal-buy); box-shadow: 0 0 8px var(--signal-buy); }
-.sig-on.sell { background: var(--signal-sell); box-shadow: 0 0 8px var(--signal-sell); }
-.sig-on.strong-buy { background: var(--signal-strong-buy); box-shadow: 0 0 8px var(--signal-strong-buy); }
-.sig-on.strong-sell { background: var(--signal-strong-sell); box-shadow: 0 0 8px var(--signal-strong-sell); }
+.sig-on.pos { background: var(--signal-pos); box-shadow: 0 0 8px var(--signal-pos); }
+.sig-on.neg { background: var(--signal-neg); box-shadow: 0 0 8px var(--signal-neg); }
+.sig-on.strong-pos { background: var(--signal-strong-pos); box-shadow: 0 0 8px var(--signal-strong-pos); }
+.sig-on.strong-neg { background: var(--signal-strong-neg); box-shadow: 0 0 8px var(--signal-strong-neg); }
 
 .sig-off { color: var(--text-dim); }
 
@@ -639,25 +639,25 @@ tbody tr:hover { background: rgba(0, 180, 255, 0.04); }
   font-size: 0.85rem;
 }
 
-.signal-buy {
+.signal-pos {
   background: rgba(0,255,136,0.15);
   color: var(--accent-green);
   border: 1px solid rgba(0,255,136,0.3);
 }
 
-.signal-sell {
+.signal-neg {
   background: rgba(255,68,102,0.15);
   color: var(--accent-red);
   border: 1px solid rgba(255,68,102,0.3);
 }
 
-.signal-strong-buy {
+.signal-strong-pos {
   background: rgba(0,255,136,0.25);
   color: #00ff88;
   border: 1px solid var(--accent-green);
 }
 
-.signal-strong-sell {
+.signal-strong-neg {
   background: rgba(255,68,102,0.25);
   color: #ff4466;
   border: 1px solid var(--accent-red);
