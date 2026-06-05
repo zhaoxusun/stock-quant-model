@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="logo">Quant AI Signal · 机器学习信号分析</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="/static/echarts.min.js"></script>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -211,10 +211,10 @@ function renderSignalCounts(counts, totalSignalDays, totalRows) {
   const ratio = totalRows > 0 ? (totalSignalDays / totalRows * 100).toFixed(1) : 0;
 
   const items = [
-    { key: 'normal_buy', cls: 'normal-buy', label: t('nb'), val: counts.normal_buy || 0 },
-    { key: 'normal_sell', cls: 'normal-sell', label: t('ns'), val: counts.normal_sell || 0 },
-    { key: 'strong_buy', cls: 'strong-buy', label: t('sb'), val: counts.strong_buy || 0 },
-    { key: 'strong_sell', cls: 'strong-sell', label: t('ss'), val: counts.strong_sell || 0 },
+    { key: 'normal_buy', cls: 'normal-pos', label: t('nb'), val: counts.normal_buy || 0 },
+    { key: 'normal_sell', cls: 'normal-neg', label: t('ns'), val: counts.normal_sell || 0 },
+    { key: 'strong_buy', cls: 'strong-pos', label: t('sb'), val: counts.strong_buy || 0 },
+    { key: 'strong_sell', cls: 'strong-neg', label: t('ss'), val: counts.strong_sell || 0 },
   ];
 
   items.forEach(item => {
@@ -432,7 +432,7 @@ function renderTable(details) {
       <td style="color:var(--text-secondary)">${d.date}</td>
       ${sigTypes.map(st => `<td style="color:${sigColors[st]};font-weight:${d['prob_'+st] > 0.5 ? 700 : 400}">${(d['prob_'+st]*100).toFixed(1)}%</td>`).join('')}
       ${sigTypes.map(st => `<td>${d[st]
-        ? `<span class="sig-on ${st === 'normal_buy' ? 'buy' : st === 'normal_sell' ? 'sell' : st === 'strong_buy' ? 'strong-buy' : 'strong-sell'}"></span>✓`
+        ? `<span class="sig-on ${st === 'normal_buy' ? 'pos' : st === 'normal_sell' ? 'neg' : st === 'strong_buy' ? 'strong-pos' : 'strong-neg'}"></span>✓`
         : '<span class="sig-off">—</span>'
       }</td>`).join('')}
     `;
