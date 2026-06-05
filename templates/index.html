@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="logo">Quant AI Signal · 智能回测信号分析</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -160,7 +159,7 @@ async function doSearch() {
     const data = await resp.json();
 
     if (!data.success) {
-      showError(data.message || t('unknown_error'));
+      showError(data.retry_after ? t('rate_limit')(data.retry_after) : (data.message || t('unknown_error')));
       return;
     }
 
@@ -490,7 +489,7 @@ function renderWeekSignals(rw) {
     if (v === 0) return;
     const chip = document.createElement('span');
     chip.style.cssText = `padding:4px 12px;border-radius:6px;font-size:0.78rem;font-family:var(--font-mono);background:${sigColors[st]}15;border:1px solid ${sigColors[st]}40;color:${sigColors[st]};`;
-    chip.textContent = `${t(sigLabels[st])} ${v}天`;
+    chip.textContent = `${t(sigLabels[st])} ${v}${t('signal_days_unit')}`;
     content.appendChild(chip);
   });
 
@@ -569,8 +568,8 @@ function renderKlineChart(chartData) {
         if (!bar) return '';
         const sigs = sigTypes.filter(st => bar[st]).map(st => sigLabels[st]).join(', ');
         return `<b>${bar.date}</b><br/>
-开: ${bar.o} &nbsp; 高: ${bar.h} &nbsp; 低: ${bar.l} &nbsp; 收: ${bar.c}<br/>
-量: ${(bar.v/10000).toFixed(0)}万<br/>
+${t('kline_open')}: ${bar.o} &nbsp; ${t('kline_high')}: ${bar.h} &nbsp; ${t('kline_low')}: ${bar.l} &nbsp; ${t('kline_close')}: ${bar.c}<br/>
+${t('kline_volume_label')}: ${(bar.v/10000).toFixed(0)}${t('kline_volume_unit')}<br/>
 ${sigs ? `<span style="color:${sigColors[sigTypes.find(st=>bar[st])]}">⚠ ${sigs}</span>` : ''}`;
       }
     },
