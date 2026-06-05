@@ -1,6 +1,5 @@
 ml/data/
 ml/train.py
-ml/anti_cheat.py
 
 **.md
 LICENSE
