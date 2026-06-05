@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="bht_title">Quant AI Signal 使用指南 · Quant AI Signal</title>
-<meta name="description" content="详细解读 Quant AI Signal 的四种交易信号含义、K 线图分析方法及使用注意事项。适合量化交易入门用户。">
+<meta name="description" content="详细解读 Quant AI Signal 的四种参考信号含义、K 线图分析方法及使用注意事项。适合量化分析入门用户。">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -16,22 +16,22 @@
 <p style="color:var(--text-dim);" data-i18n="bht_updated">最后更新：2026 年 6 月 3 日</p>
 
 <h2 data-i18n="bht_what_h">什么是 Quant AI Signal？</h2>
-<p data-i18n="what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种交易信号，帮助投资者更全面地理解市场状态。</p>
+<p data-i18n="what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的深度学习推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
 <p data-i18n="what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
 
-<h2 data-i18n="signals_h">四种交易信号解读</h2>
+<h2 data-i18n="signals_h">四种参考信号解读</h2>
 
-<h3><span class="signal-box signal-buy" data-i18n="signal_buy_label">买入</span> <span data-i18n="signal_buy_en">Normal Buy</span></h3>
-<p data-i18n="signal_buy_desc">模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前具备一定的上涨动能，可予以关注。</p>
+<h3><span class="signal-box signal-buy" data-i18n="signal_buy_label">正向信号</span> <span data-i18n="signal_buy_en">Positive</span></h3>
+<p data-i18n="signal_buy_desc">模型检测到价格处于上升趋势、成交量温和放大、技术指标处于合理区间。信号含义：当前模型综合特征指向偏积极方向。</p>
 
-<h3><span class="signal-box signal-strong-buy" data-i18n="signal_strong_buy_label">强买</span> <span data-i18n="signal_strong_buy_en">Strong Buy</span></h3>
-<p data-i18n="signal_strong_buy_desc">多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：市场情绪较为乐观，上涨动能较强。</p>
+<h3><span class="signal-box signal-strong-buy" data-i18n="signal_strong_buy_label">强正向信号</span> <span data-i18n="signal_strong_buy_en">Strong Positive</span></h3>
+<p data-i18n="signal_strong_buy_desc">多个维度的特征同时指向积极方向：价格突破关键均线、成交量显著放大、多项技术指标共振。信号含义：多项特征同时指向积极方向。</p>
 
-<h3><span class="signal-box signal-sell" data-i18n="signal_sell_label">卖出</span> <span data-i18n="signal_sell_en">Normal Sell</span></h3>
-<p data-i18n="signal_sell_desc">模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：短期可能存在回调风险。</p>
+<h3><span class="signal-box signal-sell" data-i18n="signal_sell_label">负向信号</span> <span data-i18n="signal_sell_en">Negative</span></h3>
+<p data-i18n="signal_sell_desc">模型检测到价格承压、成交量萎缩或放量下跌、指标处于高位回落阶段。信号含义：多项特征指向偏保守方向。</p>
 
-<h3><span class="signal-box signal-strong-sell" data-i18n="signal_strong_sell_label">强卖</span> <span data-i18n="signal_strong_sell_en">Strong Sell</span></h3>
-<p data-i18n="signal_strong_sell_desc">多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：下行风险较大，需谨慎对待。</p>
+<h3><span class="signal-box signal-strong-sell" data-i18n="signal_strong_sell_label">强负向信号</span> <span data-i18n="signal_strong_sell_en">Strong Negative</span></h3>
+<p data-i18n="signal_strong_sell_desc">多个特征同时发出警示：价格跌破重要支撑、指标显示超买回落或超卖延续、量价关系异常。信号含义：多项特征同时指向偏谨慎方向。</p>
 
 <div style="background:rgba(255,180,50,0.08);border:1px solid rgba(255,180,50,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;">
   <strong data-i18n="warning_label">⚠ 重要提示：</strong> <span data-i18n="warning_text">所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。</span>
@@ -62,10 +62,10 @@
 <h3 data-i18n="step3_h">第三步：结合 K 线图进行分析</h3>
 <p data-i18n="step3_p">K 线图中使用不同颜色标记信号发生的位置：</p>
 <ul>
-  <li><strong style="color:#00ff88;">↑</strong> <span data-i18n="step3_buy">买入信号</span></li>
-  <li><strong style="color:#00ff88;">▲</strong> <span data-i18n="step3_strong_buy">强买信号</span></li>
-  <li><strong style="color:#ff4466;">↓</strong> <span data-i18n="step3_sell">卖出信号</span></li>
-  <li><strong style="color:#ff4466;">▼</strong> <span data-i18n="step3_strong_sell">强卖信号</span></li>
+  <li><strong style="color:#00ff88;">↑</strong> <span data-i18n="step3_buy">正向信号</span></li>
+  <li><strong style="color:#00ff88;">▲</strong> <span data-i18n="step3_strong_buy">强正向信号</span></li>
+  <li><strong style="color:#ff4466;">↓</strong> <span data-i18n="step3_sell">负向信号</span></li>
+  <li><strong style="color:#ff4466;">▼</strong> <span data-i18n="step3_strong_sell">强负向信号</span></li>
 </ul>
 
 <h2 data-i18n="bht_source_h">数据来源与更新频率</h2>
@@ -77,8 +77,8 @@
 
 <h2 data-i18n="faq_h">常见问题</h2>
 
-<h3 data-i18n="faq1_q">信号准确率如何？</h3>
-<p data-i18n="faq1_a">模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的交易依据。</p>
+<h3 data-i18n="faq1_q">模型效果如何？</h3>
+<p data-i18n="faq1_a">模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的参考依据。</p>
 
 <h3 data-i18n="faq2_q">为什么有些股票没有信号？</h3>
 <p data-i18n="faq2_a">部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
