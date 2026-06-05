@@ -120,8 +120,8 @@ const sigColors = {
   normal_buy: '#00ff88', normal_sell: '#ff3355',
   strong_buy: '#00d4ff', strong_sell: '#ff8800'
 };
-const sigLabels = { normal_buy: 'nb', normal_sell: 'ns', strong_buy: 'sb', strong_sell: 'ss' };
-const sigShorts = { normal_buy: 'nb_short', normal_sell: 'ns_short', strong_buy: 'sb_short', strong_sell: 'ss_short' };
+const sigLabels = { normal_buy: 'np', normal_sell: 'nn', strong_buy: 'sp', strong_sell: 'sn' };
+const sigShorts = { normal_buy: 'np_short', normal_sell: 'nn_short', strong_buy: 'sp_short', strong_sell: 'sn_short' };
 
 let barChart, pieChart, timelineChart;
 
@@ -211,10 +211,10 @@ function renderSignalCounts(counts, totalSignalDays, totalRows) {
   const ratio = totalRows > 0 ? (totalSignalDays / totalRows * 100).toFixed(1) : 0;
 
   const items = [
-    { key: 'normal_buy', cls: 'normal-pos', label: t('nb'), val: counts.normal_buy || 0 },
-    { key: 'normal_sell', cls: 'normal-neg', label: t('ns'), val: counts.normal_sell || 0 },
-    { key: 'strong_buy', cls: 'strong-pos', label: t('sb'), val: counts.strong_buy || 0 },
-    { key: 'strong_sell', cls: 'strong-neg', label: t('ss'), val: counts.strong_sell || 0 },
+    { key: 'normal_buy', cls: 'normal-pos', label: t('np'), val: counts.normal_buy || 0 },
+    { key: 'normal_sell', cls: 'normal-neg', label: t('nn'), val: counts.normal_sell || 0 },
+    { key: 'strong_buy', cls: 'strong-pos', label: t('sp'), val: counts.strong_buy || 0 },
+    { key: 'strong_sell', cls: 'strong-neg', label: t('sn'), val: counts.strong_sell || 0 },
   ];
 
   items.forEach(item => {
@@ -566,10 +566,10 @@ function renderKlineChart(chartData) {
       formatter: params => {
         const bar = chartData[params[0].dataIndex];
         if (!bar) return '';
-        const sigs = sigTypes.filter(st => bar[st]).map(st => sigLabels[st]).join(', ');
+        const sigs = sigTypes.filter(st => bar[st]).map(st => t(sigLabels[st])).join(', ');
         return `<b>${bar.date}</b><br/>
 ${t('kline_open')}: ${bar.o} &nbsp; ${t('kline_high')}: ${bar.h} &nbsp; ${t('kline_low')}: ${bar.l} &nbsp; ${t('kline_close')}: ${bar.c}<br/>
-${t('kline_volume_label')}: ${(bar.v/10000).toFixed(0)}${t('kline_volume_unit')}<br/>
+${t('kline_volume_label')}: ${(bar.v/1000).toFixed(0)}${t('kline_volume_unit')}<br/>
 ${sigs ? `<span style="color:${sigColors[sigTypes.find(st=>bar[st])]}">⚠ ${sigs}</span>` : ''}`;
       }
     },
@@ -620,7 +620,7 @@ ${sigs ? `<span style="color:${sigColors[sigTypes.find(st=>bar[st])]}">⚠ ${sig
           color: 'rgba(200,220,255,0.25)',
           fontSize: 8,
           fontFamily: "'JetBrains Mono', monospace",
-          formatter: v => v >= 10000 ? (v/10000).toFixed(0) + '万' : v,
+          formatter: v => v >= 1000 ? (v/1000).toFixed(0) + t('kline_volume_unit') : v,
         },
         gridIndex: 1,
       },
