@@ -1,8 +1,8 @@
+akshare
+baostock
 numpy
 pandas
 scikit-learn
 flask
 flask-cors
-akshare
-baostock
 xgboost
