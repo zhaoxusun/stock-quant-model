@@ -37,15 +37,15 @@ STRATEGIES = {
 }
 
 SIGNAL_PRIORITY = {
-    "normal_buy": 1,
-    "normal_sell": 2,
-    "strong_buy": 3,
-    "strong_sell": 4,
+    "normal_pos": 1,
+    "normal_neg": 2,
+    "strong_pos": 3,
+    "strong_neg": 4,
     "hold": 0,
 }
 
-LABEL_MAP = {"hold": 0, "normal_buy": 1, "normal_sell": 2, "strong_buy": 3, "strong_sell": 4}
-LABEL_INVERSE = {0: "hold", 1: "normal_buy", 2: "normal_sell", 3: "strong_buy", 4: "strong_sell"}
+LABEL_MAP = {"hold": 0, "normal_pos": 1, "normal_neg": 2, "strong_pos": 3, "strong_neg": 4}
+LABEL_INVERSE = {0: "hold", 1: "normal_pos", 2: "normal_neg", 3: "strong_pos", 4: "strong_neg"}
 
 XGB_PARAMS = {
     "objective": "binary:logistic",
@@ -61,4 +61,4 @@ XGB_PARAMS = {
     "verbosity": 1,
 }
 
-SIGNAL_TYPES = ["normal_buy", "normal_sell", "strong_buy", "strong_sell"]
+SIGNAL_TYPES = ["normal_pos", "normal_neg", "strong_pos", "strong_neg"]

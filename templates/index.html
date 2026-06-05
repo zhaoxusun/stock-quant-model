@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="logo">Quant AI Signal · 机器学习信号分析</title>
+<title data-i18n="logo">Quant Reference Signal · 机器学习信号分析</title>
 <script src="/static/echarts.min.js"></script>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
@@ -115,13 +115,13 @@
 // ── API 基地址（Vercel/本地同域部署留空即可）──
 const API_BASE = '';
 
-const sigTypes = ['normal_buy', 'normal_sell', 'strong_buy', 'strong_sell'];
+const sigTypes = ['normal_pos', 'normal_neg', 'strong_pos', 'strong_neg'];
 const sigColors = {
-  normal_buy: '#00ff88', normal_sell: '#ff3355',
-  strong_buy: '#00d4ff', strong_sell: '#ff8800'
+  normal_pos: '#00ff88', normal_neg: '#ff3355',
+  strong_pos: '#00d4ff', strong_neg: '#ff8800'
 };
-const sigLabels = { normal_buy: 'np', normal_sell: 'nn', strong_buy: 'sp', strong_sell: 'sn' };
-const sigShorts = { normal_buy: 'np_short', normal_sell: 'nn_short', strong_buy: 'sp_short', strong_sell: 'sn_short' };
+const sigLabels = { normal_pos: 'np', normal_neg: 'nn', strong_pos: 'sp', strong_neg: 'sn' };
+const sigShorts = { normal_pos: 'np_short', normal_neg: 'nn_short', strong_pos: 'sp_short', strong_neg: 'sn_short' };
 
 let barChart, pieChart, timelineChart;
 
@@ -211,10 +211,10 @@ function renderSignalCounts(counts, totalSignalDays, totalRows) {
   const ratio = totalRows > 0 ? (totalSignalDays / totalRows * 100).toFixed(1) : 0;
 
   const items = [
-    { key: 'normal_buy', cls: 'normal-pos', label: t('np'), val: counts.normal_buy || 0 },
-    { key: 'normal_sell', cls: 'normal-neg', label: t('nn'), val: counts.normal_sell || 0 },
-    { key: 'strong_buy', cls: 'strong-pos', label: t('sp'), val: counts.strong_buy || 0 },
-    { key: 'strong_sell', cls: 'strong-neg', label: t('sn'), val: counts.strong_sell || 0 },
+    { key: 'normal_pos', cls: 'normal-pos', label: t('np'), val: counts.normal_pos || 0 },
+    { key: 'normal_neg', cls: 'normal-neg', label: t('nn'), val: counts.normal_neg || 0 },
+    { key: 'strong_pos', cls: 'strong-pos', label: t('sp'), val: counts.strong_pos || 0 },
+    { key: 'strong_neg', cls: 'strong-neg', label: t('sn'), val: counts.strong_neg || 0 },
   ];
 
   items.forEach(item => {
@@ -432,7 +432,7 @@ function renderTable(details) {
       <td style="color:var(--text-secondary)">${d.date}</td>
       ${sigTypes.map(st => `<td style="color:${sigColors[st]};font-weight:${d['prob_'+st] > 0.5 ? 700 : 400}">${(d['prob_'+st]*100).toFixed(1)}%</td>`).join('')}
       ${sigTypes.map(st => `<td>${d[st]
-        ? `<span class="sig-on ${st === 'normal_buy' ? 'pos' : st === 'normal_sell' ? 'neg' : st === 'strong_buy' ? 'strong-pos' : 'strong-neg'}"></span>✓`
+        ? `<span class="sig-on ${st === 'normal_pos' ? 'pos' : st === 'normal_neg' ? 'neg' : st === 'strong_pos' ? 'strong-pos' : 'strong-neg'}"></span>✓`
         : '<span class="sig-off">—</span>'
       }</td>`).join('')}
     `;
@@ -525,20 +525,20 @@ function renderKlineChart(chartData) {
   chartData.forEach((d, idx) => {
     sigTypes.forEach(st => {
       if (d[st]) {
-        const isBuy = st === 'normal_buy' || st === 'strong_buy';
+        const isPos = st === 'normal_pos' || st === 'strong_pos';
         sigMarkers[st].push({
           name: d.date,
-          coord: [idx, isBuy ? d.l - signalOffset : d.h + signalOffset],
+          coord: [idx, isPos ? d.l - signalOffset : d.h + signalOffset],
           symbol: 'pin',
-          symbolRotate: isBuy ? 180 : 0,
-          symbolSize: st === 'strong_buy' || st === 'strong_sell' ? 26 : 18,
+          symbolRotate: isPos ? 180 : 0,
+          symbolSize: st === 'strong_pos' || st === 'strong_neg' ? 26 : 18,
           itemStyle: { color: sigColors[st] },
         });
       }
     });
   });
 
-  const legendTags = ['normal_buy', 'normal_sell', 'strong_buy', 'strong_sell']
+  const legendTags = ['normal_pos', 'normal_neg', 'strong_pos', 'strong_neg']
     .filter(st => sigMarkers[st].length > 0);
 
   // ── 图例 ──
@@ -681,10 +681,10 @@ ${sigs ? `<span style="color:${sigColors[sigTypes.find(st=>bar[st])]}">⚠ ${sig
 
   // ── 信号 scatter 系列（每类信号独立 series） ──
   const sigSeriesConfig = {
-    normal_buy:  { symbol: 'pin', size: 18, rotate: 180, pos: 'bottom' },
-    normal_sell: { symbol: 'pin', size: 18, rotate: 0,   pos: 'top'    },
-    strong_buy:  { symbol: 'pin', size: 26, rotate: 180, pos: 'bottom' },
-    strong_sell: { symbol: 'pin', size: 26, rotate: 0,   pos: 'top'    },
+    normal_pos:  { symbol: 'pin', size: 18, rotate: 180, pos: 'bottom' },
+    normal_neg: { symbol: 'pin', size: 18, rotate: 0,   pos: 'top'    },
+    strong_pos:  { symbol: 'pin', size: 26, rotate: 180, pos: 'bottom' },
+    strong_neg: { symbol: 'pin', size: 26, rotate: 0,   pos: 'top'    },
   };
 
   const scatterSeries = sigTypes.filter(st => sigMarkers[st].length > 0).map(st => {

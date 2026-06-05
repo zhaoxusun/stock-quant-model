@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="bht_title">Quant AI Signal 使用指南 · Quant AI Signal</title>
-<meta name="description" content="详细解读 Quant AI Signal 的四种参考信号含义、K 线图分析方法及使用注意事项。适合量化分析入门用户。">
+<title data-i18n="bht_title">Quant Reference Signal 使用指南 · Quant Reference Signal</title>
+<meta name="description" content="详细解读 Quant Reference Signal 的四种参考信号含义、K 线图分析方法及使用注意事项。适合量化分析入门用户。">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -12,11 +12,11 @@
 <div class="bg-gradient"></div>
 {% include '_header.html' %}
 <div class="content-wrap">
-<h1 data-i18n="bht_h1">📖 Quant AI Signal 使用指南</h1>
+<h1 data-i18n="bht_h1">📖 Quant Reference Signal 使用指南</h1>
 <p style="color:var(--text-dim);" data-i18n="bht_updated">最后更新：2026 年 6 月 3 日</p>
 
-<h2 data-i18n="bht_what_h">什么是 Quant AI Signal？</h2>
-<p data-i18n="bht_what_p1">Quant AI Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的模型推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
+<h2 data-i18n="bht_what_h">什么是 Quant Reference Signal？</h2>
+<p data-i18n="bht_what_p1">Quant Reference Signal 是一个基于 <strong>XGBoost 多标签分类模型</strong>的在线量化信号分析工具。它通过对股票历史行情数据的模型推理，输出四种参考信号，帮助研究者更全面地理解市场状态。</p>
 <p data-i18n="bht_what_p2">与传统的单一技术指标不同，该模型综合考量价格趋势、成交量变化、技术指标（如 RSI、MACD、布林带）等近百项特征，在每日收盘后滚动推理一次，输出次日开盘前的参考信号。</p>
 
 <h2 data-i18n="signals_h">四种参考信号解读</h2>
@@ -34,7 +34,7 @@
 <p data-i18n="signal_strong_neg_desc">多个特征同时发出警示：价格运行于关键均线下方、指标显示超买回落或超卖延续、量价关系异常。信号含义：多项特征同时指向偏谨慎方向。</p>
 
 <div style="background:rgba(255,180,50,0.08);border:1px solid rgba(255,180,50,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;">
-  <strong data-i18n="warning_label">⚠ 重要提示：</strong> <span data-i18n="warning_text">所有信号均为概率输出，并非确定性预测。任何交易决策都应结合自身风险承受能力、资金管理策略独立判断。</span>
+  <strong data-i18n="warning_label">⚠ 重要提示：</strong> <span data-i18n="warning_text">所有信号均为概率输出，并非确定性结论。所有信息仅供参考，用户应独立判断并自行承担风险。</span>
 </div>
 
 <h2 data-i18n="howto_h">如何使用本工具</h2>
@@ -78,13 +78,13 @@
 <h2 data-i18n="faq_h">常见问题</h2>
 
 <h3 data-i18n="faq1_q">模型效果如何？</h3>
-<p data-i18n="faq1_a">模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的预测能力都有其局限性。建议将信号作为辅助参考，而非唯一的参考依据。</p>
+<p data-i18n="faq1_a">模型的训练目标是最优化信号与后续实际走势的匹配度。由于市场高度随机，任何模型的参考价值都有其局限性。建议将信号作为辅助参考，而非唯一的参考依据。</p>
 
 <h3 data-i18n="faq2_q">为什么有些股票没有信号？</h3>
 <p data-i18n="faq2_a">部分股票可能因数据不足（如次新股、长期停牌）或模型置信度不够而输出"无信号"，这本身就提供了一定的参考信息。</p>
 
 <h3 data-i18n="faq3_q">工具免费使用吗？</h3>
-<p data-i18n="faq3_a">是的，Quant AI Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
+<p data-i18n="faq3_a">是的，Quant Reference Signal 完全免费使用。未来可能引入非侵入式广告以覆盖服务器成本，不影响核心功能使用。</p>
 
 </div>
 {% include '_footer.html' %}

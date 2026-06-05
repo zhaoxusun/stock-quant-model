@@ -18,9 +18,9 @@ logger = create_log("test_model")
 _RAW_DIR = os.path.join(_PROJECT_ROOT, "ml", "data", "raw", "futu")
 _TABFMT = "fancy_grid"
 
-sig_types = ["normal_buy", "normal_sell", "strong_buy", "strong_sell"]
-sig_labels = {"normal_buy": "正向(normal_buy)", "normal_sell": "负向(normal_sell)",
-              "strong_buy": "强正向(strong_buy)", "strong_sell": "强负向(strong_sell)"}
+sig_types = ["normal_pos", "normal_neg", "strong_pos", "strong_neg"]
+sig_labels = {"normal_pos": "正向", "normal_neg": "负向",
+              "strong_pos": "强正向", "strong_neg": "强负向"}
 
 
 def _fmt_tbl(data, headers, aligns, showindex=False):
@@ -387,7 +387,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
         signals[st] = (prob_val, sig_val)
 
     has_signal = any(v for _, v in signals.values())
-    status_icon = "⚠️  有参考信号" if has_signal else "✅  无参考信号"
+    status_icon = "[有参考信号]" if has_signal else "[无参考信号]"
 
     tbl = []
     for st in sig_types:
