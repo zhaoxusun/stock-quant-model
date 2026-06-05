@@ -172,9 +172,12 @@ header {
 .container {
   position: relative;
   z-index: 1;
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px 20px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .content-wrap {
@@ -735,5 +738,8 @@ footer p { margin: 0; }
 @media (max-width: 500px) {
   .grid-4col { grid-template-columns: 1fr; }
   .signal-counts { grid-template-columns: 1fr; }
-  .container { padding: 16px 12px 20px; }
+  .container {
+    padding: 16px 12px 20px;
+    overflow-x: hidden;
+  }
 }
