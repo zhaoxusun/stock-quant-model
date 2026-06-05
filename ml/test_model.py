@@ -242,8 +242,8 @@ def test_batch(strategy_name="EnhancedVolumeStrategy"):
 
 
 def test_compare_with_actual(strategy_name="EnhancedVolumeStrategy"):
-    """与策略原始信号逐日对比——每个信号类型独立二分类评估"""
-    logger.info("%s — 策略对比评估", strategy_name)
+    """与原始信号逐日对比——每个信号类型独立二分类评估"""
+    logger.info("%s — 信号对比评估", strategy_name)
 
     from ml.train import find_signal_for_stock
 
@@ -331,7 +331,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
     date : str or None
         日期 "YYYY-MM-DD"，默认取该股票最新日期
     strategy_name : str
-        策略名称
+        信号策略名称
     """
     stock_code = str(stock_code)
 
