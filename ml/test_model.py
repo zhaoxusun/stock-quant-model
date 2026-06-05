@@ -331,7 +331,7 @@ def check_stock_signal(stock_code, date=None, strategy_name="EnhancedVolumeStrat
     date : str or None
         日期 "YYYY-MM-DD"，默认取该股票最新日期
     strategy_name : str
-        信号策略名称
+        信号模型名称
     """
     stock_code = str(stock_code)
 
