@@ -213,24 +213,15 @@ def clean():
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
 
     # 10. Remove scipy modules not needed for inference
-    # Keep only: linalg, sparse, special (used by sklearn)
     scipy_dir = os.path.join(sitepkgs, 'scipy')
     if os.path.isdir(scipy_dir):
-        scipy_keep = {'__init__.py', 'version.py', '_lib', 'linalg', 'sparse', 'special', 'conftest.py'}
-        for item in os.listdir(scipy_dir):
-            item_path = os.path.join(scipy_dir, item)
-            base = item.replace('.py', '')
-            if base in scipy_keep or item in scipy_keep:
-                continue
-            saved = rm(item_path) if os.path.isdir(item_path) else None
-            if not saved:
-                if os.path.isfile(item_path) and item.endswith('.py'):
-                    sz = os.path.getsize(item_path)
-                    os.remove(item_path)
-                    saved = sz
+        scipy_remove = ['cluster', 'constants', 'fft', 'integrate', 'interpolate', 'io',
+                        'ndimage', 'odr', 'optimize', 'signal', 'spatial', 'stats']
+        for d in scipy_remove:
+            saved = rm(os.path.join(scipy_dir, d))
             if saved:
                 total_saved += saved
-                print(f'  Removed scipy/{item} ({saved/1e6:.1f} MB)')
+                print(f'  Removed scipy/{d}/ ({saved/1e6:.1f} MB)')
 
     # 10b. Remove sklearn subpackages not needed for inference
     # Keep: base, utils, metrics, exceptions, preprocessing
