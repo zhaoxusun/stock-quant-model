@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pip install xgboost==2.1.4 --no-deps -t xgb_pkgs && pip install akshare baostock --no-deps && python3 cleanup_vercel.py",
+  "buildCommand": "pip install xgboost --no-deps -t xgb_pkgs && pip install akshare baostock --no-deps && python3 cleanup_vercel.py",
   "routes": [
     {
       "src": "/(.*)",
