@@ -212,6 +212,45 @@ def clean():
                         total_saved += saved
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
 
+    # 10. Remove scipy modules not needed for inference
+    # Keep only: linalg, sparse, special (used by sklearn)
+    scipy_dir = os.path.join(sitepkgs, 'scipy')
+    if os.path.isdir(scipy_dir):
+        scipy_keep = {'__init__.py', 'version.py', '_lib', 'linalg', 'sparse', 'special', 'conftest.py'}
+        for item in os.listdir(scipy_dir):
+            item_path = os.path.join(scipy_dir, item)
+            base = item.replace('.py', '')
+            if base in scipy_keep or item in scipy_keep:
+                continue
+            saved = rm(item_path) if os.path.isdir(item_path) else None
+            if not saved:
+                if os.path.isfile(item_path) and item.endswith('.py'):
+                    sz = os.path.getsize(item_path)
+                    os.remove(item_path)
+                    saved = sz
+            if saved:
+                total_saved += saved
+                print(f'  Removed scipy/{item} ({saved/1e6:.1f} MB)')
+
+    # 10b. Remove sklearn subpackages not needed for inference
+    # Keep: base, utils, metrics, exceptions, preprocessing
+    sklearn_dir = os.path.join(sitepkgs, 'sklearn')
+    if os.path.isdir(sklearn_dir):
+        sklearn_keep = {'__init__.py', 'base', 'utils', 'metrics', 'exceptions', 'preprocessing', '_loss', '_config.py', 'conftest.py'}
+        for item in os.listdir(sklearn_dir):
+            item_path = os.path.join(sklearn_dir, item)
+            base = item.replace('.py', '')
+            if base in sklearn_keep or item in sklearn_keep:
+                continue
+            if os.path.isdir(item_path) or (os.path.isfile(item_path) and item.endswith('.py')):
+                saved = rm(item_path) if os.path.isdir(item_path) else None
+                if not saved and os.path.isfile(item_path):
+                    saved = os.path.getsize(item_path)
+                    os.remove(item_path)
+                if saved:
+                    total_saved += saved
+                    print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
+
     # 11. Remove all .pyi stubs globally
     for root, dirs, files in os.walk(sitepkgs):
         for f in files:
