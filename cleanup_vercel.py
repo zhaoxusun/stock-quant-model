@@ -101,7 +101,15 @@ def clean():
         total_saved += saved
         print(f'  Removed pip ({saved/1e6:.1f} MB)')
 
-    # 3. Remove rich, pygments, tabulate (UI libs)
+    # 3. Remove dist-info for akshare/baostock (prevents Vercel from deferring them)
+    for item in os.listdir(sitepkgs):
+        if item.endswith('.dist-info') and item.startswith(('akshare', 'baostock')):
+            saved = rm(os.path.join(sitepkgs, item))
+            if saved:
+                total_saved += saved
+                print(f'  Removed {item} ({saved/1e6:.1f} MB)')
+
+    # 4. Remove rich, pygments, tabulate (UI libs)
     for pkg in ('rich', 'pygments', 'tabulate'):
         saved = rm(os.path.join(sitepkgs, pkg))
         if saved:
