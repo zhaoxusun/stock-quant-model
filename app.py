@@ -8,6 +8,9 @@ if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
+# Pre-warm numpy import (forces Vercel deferred install before handler runs)
+import numpy as _np
+
 # Fix numpy ELF alignment on Lambda
 import subprocess as _sp, glob as _gl
 for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
