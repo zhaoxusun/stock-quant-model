@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pip install xgboost --no-deps -t xgb_pkgs && python3 cleanup_vercel.py",
+  "buildCommand": "uv pip install xgboost --no-deps -t xgb_pkgs && python3 cleanup_vercel.py",
   "routes": [
     {
       "src": "/(.*)",
