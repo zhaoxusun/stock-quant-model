@@ -287,6 +287,30 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed xgb_pkgs/{item} ({saved/1e6:.1f} MB)')
+            # Clean akshare: keep only stock-related modules
+            ak_dir = os.path.join(xgb_pkgs, 'akshare')
+            if os.path.isdir(ak_dir):
+                ak_stock_only = {'__init__.py', 'stock', 'stock_', 'setting', 'utils', 'constants'}
+                for item in os.listdir(ak_dir):
+                    item_path = os.path.join(ak_dir, item)
+                    if os.path.isdir(item_path):
+                        keep = False
+                        for prefix in ak_stock_only:
+                            if item == prefix or item.startswith(prefix):
+                                keep = True
+                                break
+                        if not keep:
+                            saved = rm(item_path)
+                            if saved:
+                                total_saved += saved
+                                print(f'  Removed akshare/{item}/ ({saved/1e6:.1f} MB)')
+                for item in os.listdir(ak_dir):
+                    if item.endswith('.py') and item != '__init__.py':
+                        saved = rm(os.path.join(ak_dir, item))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed akshare/{item} ({saved/1e6:.1f} MB)')
+
             # Remove bundled helper .so files except libxgboost.so
             lib_dir = os.path.join(xgb_dir, 'lib')
             if os.path.isdir(lib_dir):
