@@ -294,8 +294,7 @@ def clean():
         total_saved += strip_so(xgb_pkgs)
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
-            # Only keep files needed for inference (Booster.load_model / pickle)
-            _KEEP = {'__init__.py', 'core.py', 'libpath.py', 'compat.py', 'callback.py', 'training.py'}
+            # Remove directories (dask, spark, testing - not needed for inference)
             for item in os.listdir(xgb_dir):
                 item_path = os.path.join(xgb_dir, item)
                 if os.path.isdir(item_path) and item != 'lib':
@@ -303,13 +302,6 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed xgb_pkgs/xgboost/{item}/ ({saved/1e6:.1f} MB)')
-                elif item not in _KEEP and (item.endswith('.py') or item.endswith('.so')):
-                    fp = item_path
-                    if os.path.isfile(fp) and not os.path.islink(fp):
-                        sz = os.path.getsize(fp)
-                        os.remove(fp)
-                        total_saved += sz
-                        print(f'  Removed xgb_pkgs/xgboost/{item} ({sz/1e6:.1f} MB)')
             # Remove .dist-info from xgb_pkgs (metadata not needed)
             for item in os.listdir(xgb_pkgs):
                 if item.endswith('.dist-info') or item.endswith('.egg-info'):
