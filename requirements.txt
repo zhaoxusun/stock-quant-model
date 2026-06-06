@@ -4,5 +4,3 @@ scikit-learn
 flask
 flask-cors
 requests
-akshare
-baostock
