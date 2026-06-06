@@ -268,7 +268,7 @@ def clean():
             _KEEP = {'__init__.py', 'core.py', 'libpath.py', 'compat.py', 'callback.py', 'training.py'}
             for item in os.listdir(xgb_dir):
                 item_path = os.path.join(xgb_dir, item)
-                if os.path.isdir(item_path):
+                if os.path.isdir(item_path) and item != 'lib':
                     saved = rm(item_path)
                     if saved:
                         total_saved += saved
