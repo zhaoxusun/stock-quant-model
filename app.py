@@ -8,6 +8,14 @@ if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
+# Fix numpy ELF alignment on Lambda
+import subprocess as _sp, glob as _gl
+for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
+    try:
+        _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
+    except Exception:
+        pass
+
 from flask import Flask, jsonify, request, render_template
 
 from flask_cors import CORS
@@ -49,6 +57,17 @@ def blog():
 @app.route('/blog/how-to-use')
 def blog_how_to_use():
     return render_template('blog_how_to_use.html')
+
+@app.route('/api/health')
+def health():
+    deps = {}
+    for mod_name in ('numpy', 'pandas', 'xgboost'):
+        try:
+            __import__(mod_name)
+            deps[mod_name] = {"ok": True}
+        except Exception:
+            deps[mod_name] = {"ok": False}
+    return jsonify(deps)
 
 @app.route('/api/predict', methods=['POST'])
 def predict():

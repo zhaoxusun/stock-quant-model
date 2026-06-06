@@ -1,9 +1,14 @@
 {
+  "functions": {
+    "app.py": {
+      "includeFiles": "xgb_pkgs/**"
+    }
+  },
   "env": {
     "UV_COMPILE_BYTECODE": "0",
     "UV_NO_CACHE": "1"
   },
-  "buildCommand": "uv pip install xgboost --no-deps -t xgb_pkgs && uv pip install akshare baostock --no-deps && python3 cleanup_vercel.py",
+  "buildCommand": "pip install uv && uv pip install xgboost --no-deps -t xgb_pkgs && uv pip install akshare baostock --no-deps && python3 cleanup_vercel.py",
   "routes": [
     {
       "src": "/(.*)",
