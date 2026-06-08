@@ -251,11 +251,14 @@ def clean():
                         total_saved += saved
                         print(f'  Removed pandas/.../{d} ({saved/1e6:.1f} MB)')
 
-    # 8. numpy: remove test dirs, C headers (not needed at runtime), .pyi stubs
+    # 8. numpy: remove test dirs (keep testing/ — needed by scipy array_api_compat),
+    # C headers, .pyi stubs
     numpy_dir = os.path.join(sitepkgs, 'numpy')
     if os.path.isdir(numpy_dir):
         for root, dirs, files in os.walk(numpy_dir):
             for d in dirs:
+                if d == 'testing':
+                    continue
                 if 'test' in d.lower():
                     saved = rm(os.path.join(root, d))
                     if saved:
