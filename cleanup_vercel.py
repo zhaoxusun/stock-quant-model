@@ -292,6 +292,13 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
+        # Remove stale numpy/scipy from cached xgb_pkgs (they belong in site-packages)
+        for _stale in ('numpy', 'scipy', 'numpy.libs', 'scipy.libs'):
+            _stale_path = os.path.join(xgb_pkgs, _stale)
+            saved = rm(_stale_path)
+            if saved:
+                total_saved += saved
+                print(f'  Removed stale xgb_pkgs/{_stale} ({saved/1e6:.1f} MB)')
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
             # Remove directories (dask, spark, testing - not needed for inference)
