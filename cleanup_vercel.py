@@ -7,8 +7,15 @@ import subprocess
 
 
 def get_site_packages():
-    # Use sys.path first — during build this includes the venv's site-packages
-    paths = [p for p in sys.path if 'site-packages' in p]
+    # VERCEL_PYTHON_VENV_PATH or VIRTUAL_ENV (set by Vercel builder)
+    for key in ('VERCEL_PYTHON_VENV_PATH', 'VIRTUAL_ENV'):
+        venv = os.environ.get(key)
+        if venv and os.path.isdir(venv):
+            pkgs = os.path.join(venv, 'lib', f'python{sys.version_info.major}.{sys.version_info.minor}', 'site-packages')
+            if os.path.isdir(pkgs):
+                return pkgs
+    # Use sys.path first — during build this may include the venv's site-packages
+    paths = [p for p in sys.path if 'site-packages' in p and os.path.isdir(p)]
     if paths:
         return paths[0]
     try:
@@ -158,245 +165,258 @@ def fix_elf_alignment(path, page_size=4096):
 
 
 def clean():
-    # Fix ELF alignment first — scan CWD regardless of sitepkgs location
-    try:
-        fix_elf_alignment(os.getcwd())
-    except Exception as e:
-        print(f'  ELF alignment fixer error (non-fatal): {e}')
-
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
-        print('Cannot find site-packages, skipping cleanup')
-        return
+        print('Cannot find site-packages; will try CWD scan for ELF fix + xgb_pkgs')
+        sitepkgs = None
 
-    print(f'Site-packages: {sitepkgs}')
-    total_before = dir_size(sitepkgs)
-    print(f'Total BEFORE: {total_before / 1e6:.1f} MB\n')
+    # Fix ELF alignment on sitepkgs (where numpy/scipy live) and CWD
+    for scan_path in filter(None, [sitepkgs, os.getcwd()]):
+        try:
+            fix_elf_alignment(scan_path)
+        except Exception as e:
+            print(f'  ELF alignment fixer error on {scan_path}: {e}')
 
-    # -- large package size report --
-    print('--- Package size report (pre-cleanup) ---')
-    for pkg in sorted(os.listdir(sitepkgs)):
-        pkg_path = os.path.join(sitepkgs, pkg)
-        if os.path.isdir(pkg_path) and not pkg.startswith('_') and not pkg.endswith('.dist-info') and not pkg.endswith('.egg-info'):
-            sz = dir_size(pkg_path)
-            if sz > 5 * 1e6:
-                print(f'  {sz/1e6:7.1f} MB  {pkg}')
-    print()
+    if sitepkgs:
+        print(f'Site-packages: {sitepkgs}')
+        total_before = dir_size(sitepkgs)
+        print(f'Total BEFORE: {total_before / 1e6:.1f} MB\n')
 
-    total_saved = 0
+        # -- large package size report --
+        print('--- Package size report (pre-cleanup) ---')
+        for pkg in sorted(os.listdir(sitepkgs)):
+            pkg_path = os.path.join(sitepkgs, pkg)
+            if os.path.isdir(pkg_path) and not pkg.startswith('_') and not pkg.endswith('.dist-info') and not pkg.endswith('.egg-info'):
+                sz = dir_size(pkg_path)
+                if sz > 5 * 1e6:
+                    print(f'  {sz/1e6:7.1f} MB  {pkg}')
+        print()
 
-    # 1. py_mini_racer: remove ALL V8 binaries + ICU data
-    racer_dir = os.path.join(sitepkgs, 'py_mini_racer')
-    if os.path.isdir(racer_dir):
-        for pattern in ['libmini_racer*', 'icudtl.dat', '*.so', '*.dylib', 'v8*']:
-            for f in glob.glob(os.path.join(racer_dir, '**', pattern), recursive=True):
-                if os.path.isfile(f):
-                    sz = os.path.getsize(f)
-                    os.remove(f)
-                    total_saved += sz
-                    print(f'  Removed py_mini_racer/{os.path.basename(f)} ({sz/1e6:.1f} MB)')
+        total_saved = 0
 
-    # 2. Remove pip (build tool)
-    saved = rm(os.path.join(sitepkgs, 'pip'))
-    if saved:
-        total_saved += saved
-        print(f'  Removed pip ({saved/1e6:.1f} MB)')
+        # 1. py_mini_racer: remove ALL V8 binaries + ICU data
+        racer_dir = os.path.join(sitepkgs, 'py_mini_racer')
+        if os.path.isdir(racer_dir):
+            for pattern in ['libmini_racer*', 'icudtl.dat', '*.so', '*.dylib', 'v8*']:
+                for f in glob.glob(os.path.join(racer_dir, '**', pattern), recursive=True):
+                    if os.path.isfile(f):
+                        sz = os.path.getsize(f)
+                        os.remove(f)
+                        total_saved += sz
+                        print(f'  Removed py_mini_racer/{os.path.basename(f)} ({sz/1e6:.1f} MB)')
 
-    # 3. Remove dist-info for akshare/baostock (prevents Vercel from deferring them)
-    for item in os.listdir(sitepkgs):
-        if item.endswith('.dist-info') and item.startswith(('akshare', 'baostock')):
-            saved = rm(os.path.join(sitepkgs, item))
-            if saved:
-                total_saved += saved
-                print(f'  Removed {item} ({saved/1e6:.1f} MB)')
-
-    # 4. Remove rich, pygments, tabulate (UI libs)
-    for pkg in ('rich', 'pygments', 'tabulate'):
-        saved = rm(os.path.join(sitepkgs, pkg))
+        # 2. Remove pip (build tool)
+        saved = rm(os.path.join(sitepkgs, 'pip'))
         if saved:
             total_saved += saved
-            print(f'  Removed {pkg} ({saved/1e6:.1f} MB)')
+            print(f'  Removed pip ({saved/1e6:.1f} MB)')
 
-    # 4. Remove nvidia CUDA libs (413 MB, GPU training only, not needed for inference)
-    for item in os.listdir(sitepkgs):
-        if item.startswith('nvidia') or 'nvidia' in item.lower():
-            saved = rm(os.path.join(sitepkgs, item))
-            if saved:
-                total_saved += saved
-                print(f'  Removed {item} ({saved/1e6:.1f} MB)')
-
-    # 5. scipy: keep only sparse + special (xgboost needs scipy.special.softmax) + _lib
-    scipy_dir = os.path.join(sitepkgs, 'scipy')
-    if os.path.isdir(scipy_dir):
-        keep_dirs = {'_lib', 'sparse', 'special', 'linalg'}
-        keep_files = {'__init__.py', '__config__.py', 'version.py', '_distributor_init.py'}
-        for item in os.listdir(scipy_dir):
-            item_path = os.path.join(scipy_dir, item)
-            if os.path.isdir(item_path) and item not in keep_dirs:
-                sz = dir_size(item_path)
-                shutil.rmtree(item_path)
-                total_saved += sz
-                print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
-            elif os.path.isfile(item_path) and item not in keep_files and not item.endswith(('.so', '.pyd')):
-                sz = os.path.getsize(item_path)
-                os.remove(item_path)
-                total_saved += sz
-                print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
-
-    # 6. sklearn: remove tests
-    sklearn_dir = os.path.join(sitepkgs, 'sklearn')
-    if os.path.isdir(sklearn_dir):
-        for item in os.listdir(sklearn_dir):
-            lower = item.lower()
-            if 'test' in lower or 'example' in lower:
-                saved = rm(os.path.join(sklearn_dir, item))
+        # 3. Remove dist-info for akshare/baostock (prevents Vercel from deferring them)
+        for item in os.listdir(sitepkgs):
+            if item.endswith('.dist-info') and item.startswith(('akshare', 'baostock')):
+                saved = rm(os.path.join(sitepkgs, item))
                 if saved:
                     total_saved += saved
-                    print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
+                    print(f'  Removed {item} ({saved/1e6:.1f} MB)')
 
-    # 7. pandas: remove .pyi type stubs, test dirs
-    pandas_dir = os.path.join(sitepkgs, 'pandas')
-    if os.path.isdir(pandas_dir):
-        for root, dirs, files in os.walk(pandas_dir):
-            for f in files:
-                if f.endswith('.pyi'):
-                    fp = os.path.join(root, f)
-                    sz = os.path.getsize(fp)
-                    os.remove(fp)
-                    total_saved += sz
-            for d in dirs:
-                if 'test' in d.lower():
-                    saved = rm(os.path.join(root, d))
-                    if saved:
-                        total_saved += saved
-                        print(f'  Removed pandas/.../{d} ({saved/1e6:.1f} MB)')
-
-    # 8. numpy: remove test dirs (keep testing/ — needed by scipy array_api_compat),
-    # C headers, .pyi stubs
-    numpy_dir = os.path.join(sitepkgs, 'numpy')
-    if os.path.isdir(numpy_dir):
-        for root, dirs, files in os.walk(numpy_dir):
-            for d in dirs:
-                if d == 'testing':
-                    continue
-                if 'test' in d.lower():
-                    saved = rm(os.path.join(root, d))
-                    if saved:
-                        total_saved += saved
-                        print(f'  Removed numpy/.../{d} ({saved/1e6:.1f} MB)')
-            break
-        saved = rm(os.path.join(numpy_dir, 'core', 'include'))
-        if saved:
-            total_saved += saved
-            print(f'  Removed numpy/core/include ({saved/1e6:.1f} MB)')
-        # numpy .pyi stubs
-        for root, dirs, files in os.walk(numpy_dir):
-            for f in files:
-                if f.endswith('.pyi'):
-                    fp = os.path.join(root, f)
-                    sz = os.path.getsize(fp)
-                    os.remove(fp)
-                    total_saved += sz
-
-    # 9. xgboost: strip GPU/CUDA shared libs (keep CPU inference only)
-    xgb_dir = os.path.join(sitepkgs, 'xgboost')
-    if os.path.isdir(xgb_dir):
-        for root, dirs, files in os.walk(xgb_dir):
-            for f in files:
-                if 'cuda' in f.lower() or 'nccl' in f.lower() or 'gpu' in f.lower():
-                    fp = os.path.join(root, f)
-                    sz = os.path.getsize(fp)
-                    os.remove(fp)
-                    total_saved += sz
-                    print(f'  Removed xgboost/{f} ({sz/1e6:.1f} MB)')
-            for d in list(dirs):
-                if 'cuda' in d.lower() or 'nccl' in d.lower() or 'gpu' in d.lower():
-                    saved = rm(os.path.join(root, d))
-                    if saved:
-                        total_saved += saved
-                        print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
-
-    # 10. Remove scipy modules not needed for inference
-    scipy_dir = os.path.join(sitepkgs, 'scipy')
-    if os.path.isdir(scipy_dir):
-        scipy_remove = ['cluster', 'constants', 'fft', 'integrate', 'interpolate', 'io',
-                        'ndimage', 'odr', 'optimize', 'signal', 'spatial', 'stats']
-        for d in scipy_remove:
-            saved = rm(os.path.join(scipy_dir, d))
+        # 4. Remove rich, pygments, tabulate (UI libs)
+        for pkg in ('rich', 'pygments', 'tabulate'):
+            saved = rm(os.path.join(sitepkgs, pkg))
             if saved:
                 total_saved += saved
-                print(f'  Removed scipy/{d}/ ({saved/1e6:.1f} MB)')
+                print(f'  Removed {pkg} ({saved/1e6:.1f} MB)')
 
-    # 10b. Remove sklearn subpackages not needed for inference
-    # Keep: base, utils, metrics, exceptions, preprocessing
-    sklearn_dir = os.path.join(sitepkgs, 'sklearn')
-    if os.path.isdir(sklearn_dir):
-        sklearn_keep = {'__init__.py', 'base', 'utils', 'metrics', 'exceptions', 'preprocessing', '_loss', '_config.py', 'conftest.py'}
-        for item in os.listdir(sklearn_dir):
-            item_path = os.path.join(sklearn_dir, item)
-            base = item.replace('.py', '')
-            if base in sklearn_keep or item in sklearn_keep:
-                continue
-            if os.path.isdir(item_path) or (os.path.isfile(item_path) and item.endswith('.py')):
-                saved = rm(item_path) if os.path.isdir(item_path) else None
-                if not saved and os.path.isfile(item_path):
-                    saved = os.path.getsize(item_path)
+        # 4. Remove nvidia CUDA libs (413 MB, GPU training only, not needed for inference)
+        for item in os.listdir(sitepkgs):
+            if item.startswith('nvidia') or 'nvidia' in item.lower():
+                saved = rm(os.path.join(sitepkgs, item))
+                if saved:
+                    total_saved += saved
+                    print(f'  Removed {item} ({saved/1e6:.1f} MB)')
+
+        # 5. scipy: keep only sparse + special (xgboost needs scipy.special.softmax) + _lib
+        scipy_dir = os.path.join(sitepkgs, 'scipy')
+        if os.path.isdir(scipy_dir):
+            keep_dirs = {'_lib', 'sparse', 'special', 'linalg'}
+            keep_files = {'__init__.py', '__config__.py', 'version.py', '_distributor_init.py'}
+            for item in os.listdir(scipy_dir):
+                item_path = os.path.join(scipy_dir, item)
+                if os.path.isdir(item_path) and item not in keep_dirs:
+                    sz = dir_size(item_path)
+                    shutil.rmtree(item_path)
+                    total_saved += sz
+                    print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
+                elif os.path.isfile(item_path) and item not in keep_files and not item.endswith(('.so', '.pyd')):
+                    sz = os.path.getsize(item_path)
                     os.remove(item_path)
+                    total_saved += sz
+                    print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
+
+        # 6. sklearn: remove tests
+        sklearn_dir = os.path.join(sitepkgs, 'sklearn')
+        if os.path.isdir(sklearn_dir):
+            for item in os.listdir(sklearn_dir):
+                lower = item.lower()
+                if 'test' in lower or 'example' in lower:
+                    saved = rm(os.path.join(sklearn_dir, item))
+                    if saved:
+                        total_saved += saved
+                        print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
+
+        # 7. pandas: remove .pyi type stubs, test dirs
+        pandas_dir = os.path.join(sitepkgs, 'pandas')
+        if os.path.isdir(pandas_dir):
+            for root, dirs, files in os.walk(pandas_dir):
+                for f in files:
+                    if f.endswith('.pyi'):
+                        fp = os.path.join(root, f)
+                        sz = os.path.getsize(fp)
+                        os.remove(fp)
+                        total_saved += sz
+                for d in dirs:
+                    if 'test' in d.lower():
+                        saved = rm(os.path.join(root, d))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed pandas/.../{d} ({saved/1e6:.1f} MB)')
+
+        # 8. numpy: remove test dirs (keep testing/ — needed by scipy array_api_compat),
+        # C headers, .pyi stubs
+        numpy_dir = os.path.join(sitepkgs, 'numpy')
+        if os.path.isdir(numpy_dir):
+            for root, dirs, files in os.walk(numpy_dir):
+                for d in dirs:
+                    if d == 'testing':
+                        continue
+                    if 'test' in d.lower():
+                        saved = rm(os.path.join(root, d))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed numpy/.../{d} ({saved/1e6:.1f} MB)')
+                break
+            saved = rm(os.path.join(numpy_dir, 'core', 'include'))
+            if saved:
+                total_saved += saved
+                print(f'  Removed numpy/core/include ({saved/1e6:.1f} MB)')
+            # numpy .pyi stubs
+            for root, dirs, files in os.walk(numpy_dir):
+                for f in files:
+                    if f.endswith('.pyi'):
+                        fp = os.path.join(root, f)
+                        sz = os.path.getsize(fp)
+                        os.remove(fp)
+                        total_saved += sz
+
+        # 9. xgboost: strip GPU/CUDA shared libs (keep CPU inference only)
+        xgb_dir = os.path.join(sitepkgs, 'xgboost')
+        if os.path.isdir(xgb_dir):
+            for root, dirs, files in os.walk(xgb_dir):
+                for f in files:
+                    if 'cuda' in f.lower() or 'nccl' in f.lower() or 'gpu' in f.lower():
+                        fp = os.path.join(root, f)
+                        sz = os.path.getsize(fp)
+                        os.remove(fp)
+                        total_saved += sz
+                        print(f'  Removed xgboost/{f} ({sz/1e6:.1f} MB)')
+                for d in list(dirs):
+                    if 'cuda' in d.lower() or 'nccl' in d.lower() or 'gpu' in d.lower():
+                        saved = rm(os.path.join(root, d))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
+
+        # 10. Remove scipy modules not needed for inference
+        scipy_dir = os.path.join(sitepkgs, 'scipy')
+        if os.path.isdir(scipy_dir):
+            scipy_remove = ['cluster', 'constants', 'fft', 'integrate', 'interpolate', 'io',
+                            'ndimage', 'odr', 'optimize', 'signal', 'spatial', 'stats']
+            for d in scipy_remove:
+                saved = rm(os.path.join(scipy_dir, d))
                 if saved:
                     total_saved += saved
-                    print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
+                    print(f'  Removed scipy/{d}/ ({saved/1e6:.1f} MB)')
 
-    # 11. Remove all .pyi stubs globally
-    for root, dirs, files in os.walk(sitepkgs):
-        for f in files:
-            if f.endswith('.pyi'):
-                fp = os.path.join(root, f)
-                total_saved += os.path.getsize(fp)
-                os.remove(fp)
+        # 10b. Remove sklearn subpackages not needed for inference
+        # Keep: base, utils, metrics, exceptions, preprocessing
+        sklearn_dir = os.path.join(sitepkgs, 'sklearn')
+        if os.path.isdir(sklearn_dir):
+            sklearn_keep = {'__init__.py', 'base', 'utils', 'metrics', 'exceptions', 'preprocessing', '_loss', '_config.py', 'conftest.py'}
+            for item in os.listdir(sklearn_dir):
+                item_path = os.path.join(sklearn_dir, item)
+                base = item.replace('.py', '')
+                if base in sklearn_keep or item in sklearn_keep:
+                    continue
+                if os.path.isdir(item_path) or (os.path.isfile(item_path) and item.endswith('.py')):
+                    saved = rm(item_path) if os.path.isdir(item_path) else None
+                    if not saved and os.path.isfile(item_path):
+                        saved = os.path.getsize(item_path)
+                        os.remove(item_path)
+                    if saved:
+                        total_saved += saved
+                        print(f'  Removed sklearn/{item} ({saved/1e6:.1f} MB)')
 
-    # 11. Remove all __pycache__ and .pyc
-    for root, dirs, files in os.walk(sitepkgs):
-        for d in list(dirs):
-            if d == '__pycache__':
-                saved = rm(os.path.join(root, d))
-                if saved:
-                    total_saved += saved
-        for f in files:
-            if f.endswith('.pyc'):
-                fp = os.path.join(root, f)
-                total_saved += os.path.getsize(fp)
-                os.remove(fp)
+        # 11. Remove all .pyi stubs globally
+        for root, dirs, files in os.walk(sitepkgs):
+            for f in files:
+                if f.endswith('.pyi'):
+                    fp = os.path.join(root, f)
+                    total_saved += os.path.getsize(fp)
+                    os.remove(fp)
 
-    # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
-    total_saved += strip_so(sitepkgs)
+        # 11. Remove all __pycache__ and .pyc
+        for root, dirs, files in os.walk(sitepkgs):
+            for d in list(dirs):
+                if d == '__pycache__':
+                    saved = rm(os.path.join(root, d))
+                    if saved:
+                        total_saved += saved
+            for f in files:
+                if f.endswith('.pyc'):
+                    fp = os.path.join(root, f)
+                    total_saved += os.path.getsize(fp)
+                    os.remove(fp)
 
-    # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
-    import gzip as _gzip
-    for root, dirs, files in os.walk(os.getcwd()):
-        for f in files:
-            if f == 'model.pkl':
-                fp = os.path.join(root, f)
-                old = os.path.getsize(fp)
-                with open(fp, 'rb') as src, _gzip.open(fp + '.gz', 'wb', 9) as dst:
-                    dst.writelines(src)
-                os.remove(fp)
-                new = os.path.getsize(fp + '.gz')
-                total_saved += old - new
-                print(f'  Gzipped {os.path.relpath(fp)} ({old/1e6:.1f} MB → {new/1e6:.1f} MB)')
+        # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
+        total_saved += strip_so(sitepkgs)
 
-    # 13. Remove dead code files
-    for dead in ('ml/anti_cheat.py',):
-        fp = os.path.join(os.getcwd(), dead)
-        s = rm(fp)
-        if s:
-            total_saved += s
-            print(f'  Removed {dead} ({s/1e6:.1f} MB)')
+        # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
+        import gzip as _gzip
+        for root, dirs, files in os.walk(os.getcwd()):
+            for f in files:
+                if f == 'model.pkl':
+                    fp = os.path.join(root, f)
+                    old = os.path.getsize(fp)
+                    with open(fp, 'rb') as src, _gzip.open(fp + '.gz', 'wb', 9) as dst:
+                        dst.writelines(src)
+                    os.remove(fp)
+                    new = os.path.getsize(fp + '.gz')
+                    total_saved += old - new
+                    print(f'  Gzipped {os.path.relpath(fp)} ({old/1e6:.1f} MB \u2192 {new/1e6:.1f} MB)')
+
+        # 13. Remove dead code files
+        for dead in ('ml/anti_cheat.py',):
+            fp = os.path.join(os.getcwd(), dead)
+            s = rm(fp)
+            if s:
+                total_saved += s
+                print(f'  Removed {dead} ({s/1e6:.1f} MB)')
+
+        print()
+        print(f'Total saved: {total_saved / 1e6:.1f} MB')
+        total_after = dir_size(sitepkgs)
+        print(f'Total AFTER:  {total_after / 1e6:.1f} MB')
+    else:
+        print('Skipping site-package cleanup (not found)')
 
     # 13. Clean xgb_pkgs (xgboost installed separately to avoid nvidia deps)
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
+        total_saved = 0
         total_saved += strip_so(xgb_pkgs)
-        fix_elf_alignment(xgb_pkgs)
+        try:
+            fix_elf_alignment(xgb_pkgs)
+        except Exception as e:
+            print(f'  ELF fix error on xgb_pkgs: {e}')
         for _stale in ('scipy', 'scipy.libs'):
             _stale_path = os.path.join(xgb_pkgs, _stale)
             saved = rm(_stale_path)
@@ -492,12 +512,6 @@ _xgb_decompress()
                     fp = os.path.join(root, f)
                     total_saved += os.path.getsize(fp)
                     os.remove(fp)
-
-    print()
-    print(f'Total saved: {total_saved / 1e6:.1f} MB')
-    total_after = dir_size(sitepkgs)
-    print(f'Total AFTER:  {total_after / 1e6:.1f} MB')
-    if os.path.isdir(xgb_pkgs):
         print(f'xgb_pkgs AFTER: {dir_size(xgb_pkgs) / 1e6:.1f} MB')
     print('Cleanup done')
 
