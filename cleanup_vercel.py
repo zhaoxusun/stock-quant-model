@@ -128,7 +128,7 @@ def clean():
                 total_saved += saved
                 print(f'  Removed {item} ({saved/1e6:.1f} MB)')
 
-    # 5. scipy: remove if present
+    # 5. scipy: remove from bundle to save ~110 MB (installed at runtime by Vercel)
     for _scipy_item in ('scipy', 'scipy.libs'):
         _scipy_path = os.path.join(sitepkgs, _scipy_item)
         if os.path.isdir(_scipy_path) or os.path.isfile(_scipy_path):

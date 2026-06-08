@@ -1,8 +1,9 @@
-akshare
-baostock
-numpy
+numpy==1.26.4
+scipy>=1.12,<1.14
 pandas
 scikit-learn
 flask
 flask-cors
-xgboost
+requests
+akshare
+baostock
