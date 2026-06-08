@@ -71,6 +71,7 @@ def fix_elf_alignment(path, page_size=4096):
     """
     import struct
     fixed = 0
+    fixed_real = set()
     for root, dirs, files in os.walk(path):
         for f in files:
             if '.so' not in f:
@@ -78,7 +79,10 @@ def fix_elf_alignment(path, page_size=4096):
             fp = os.path.join(root, f)
             try:
                 if os.path.islink(fp):
-                    continue
+                    real = os.path.realpath(fp)
+                    if real in fixed_real:
+                        continue
+                    fp = real
                 with open(fp, 'rb') as fh:
                     data = bytearray(fh.read())
                 if len(data) < 64 or data[:4] != b'\x7fELF' or data[4] != 2:
@@ -136,6 +140,7 @@ def fix_elf_alignment(path, page_size=4096):
                 with open(fp, 'wb') as fh:
                     fh.write(data)
                 fixed += 1
+                fixed_real.add(os.path.realpath(fp))
             except Exception:
                 pass
     if fixed:
