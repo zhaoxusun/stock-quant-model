@@ -73,6 +73,18 @@ def health():
             deps[mod_name] = {"ok": False}
     return jsonify(deps)
 
+@app.route('/api/debug/import')
+def debug_import():
+    import sys, traceback, json as _json
+    results = {}
+    for mod_name in ('scipy', 'xgboost'):
+        try:
+            __import__(mod_name)
+            results[mod_name] = "ok"
+        except Exception:
+            results[mod_name] = traceback.format_exc()
+    return _json.dumps({"sys.path": sys.path[:10], "results": results}, indent=2), 200, {'Content-Type': 'application/json'}
+
 @app.route('/api/predict', methods=['POST'])
 def predict():
     data = request.get_json()
