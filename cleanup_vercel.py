@@ -63,18 +63,54 @@ def strip_so(path):
 
 
 def fix_elf_alignment(path):
+    PAGE = 4096
+    import struct as _st
     fixed = 0
     for root, dirs, files in os.walk(path):
         for f in files:
-            if '.so' in f and not os.path.islink(os.path.join(root, f)):
-                fp = os.path.join(root, f)
-                try:
-                    r = subprocess.run(['patchelf', '--page-size', '4096', fp],
-                                       capture_output=True, timeout=30)
-                    if r.returncode == 0:
-                        fixed += 1
-                except Exception:
-                    pass
+            if '.so' not in f or os.path.islink(os.path.join(root, f)):
+                continue
+            fp = os.path.join(root, f)
+            try:
+                with open(fp, 'rb') as fh:
+                    data = bytearray(fh.read())
+                if data[:4] != b'\x7fELF' or data[4] != 2:
+                    continue
+                e_phoff = _st.unpack_from('<Q', data, 32)[0]
+                e_phentsize = _st.unpack_from('<H', data, 54)[0]
+                e_phnum = _st.unpack_from('<H', data, 56)[0]
+                e_shoff = _st.unpack_from('<Q', data, 40)[0]
+
+                segs = []
+                for i in range(e_phnum):
+                    o = e_phoff + i * e_phentsize
+                    pt = _st.unpack_from('<I', data, o)[0]
+                    if pt != 1:
+                        continue
+                    po = _st.unpack_from('<Q', data, o + 8)[0]
+                    pv = _st.unpack_from('<Q', data, o + 16)[0]
+                    segs.append({'phdr_off': o, 'p_offset': po, 'p_vaddr': pv})
+
+                shift = 0
+                for s in segs:
+                    cur = s['p_offset'] + shift
+                    vaddr = s['p_vaddr']
+                    if cur % PAGE == vaddr % PAGE:
+                        continue
+                    adj = (vaddr - cur) % PAGE
+                    data[cur:cur] = b'\x00' * adj
+                    s['p_offset'] = cur + adj
+                    _st.pack_into('<Q', data, s['phdr_off'] + 8, s['p_offset'])
+                    shift += adj
+
+                if shift:
+                    if e_shoff > 0:
+                        _st.pack_into('<Q', data, 40, e_shoff + shift)
+                    with open(fp, 'wb') as fh:
+                        fh.write(data)
+                    fixed += 1
+            except Exception:
+                pass
     if fixed:
         print(f'  Fixed ELF alignment of {fixed} .so files in {os.path.basename(path)}')
     return fixed
