@@ -341,28 +341,30 @@ def clean():
 import ctypes as _ct, os as _os, glob as _gl
 
 def _xgb_decompress() -> None:
-    so_dir = _os.path.join(_os.path.dirname(__file__), "lib")
-    so_gz = _os.path.join(so_dir, "libxgboost.so.gz")
-    tmp_so = "/tmp/libxgboost.so"
+    lib_dir = _os.path.join(_os.path.dirname(__file__), "lib")
+    so_gz = _os.path.join(lib_dir, "libxgboost.so.gz")
+    out_so = _os.path.join(lib_dir, "libxgboost.so")
     if _os.path.exists(so_gz) and (
-        not _os.path.exists(tmp_so)
-        or _os.path.getmtime(tmp_so) < _os.path.getmtime(so_gz)
+        not _os.path.exists(out_so)
+        or _os.path.getmtime(out_so) < _os.path.getmtime(so_gz)
     ):
         try:
             import gzip as _g
-            with _g.open(so_gz, "rb") as fi, open(tmp_so, "wb") as fo:
+            with _g.open(so_gz, "rb") as fi, open(out_so, "wb") as fo:
                 fo.writelines(fi)
-            _os.chmod(tmp_so, 0o755)
+            _os.chmod(out_so, 0o755)
         except Exception:
             pass
-    # Pre-load runtime deps so libxgboost.so can find them
-    if _os.path.isdir(so_dir):
-        for _dep in sorted(_gl.glob(_os.path.join(so_dir, "*.so*"))):
-            if "libxgboost" not in _dep:
-                try:
-                    _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
-                except Exception:
-                    pass
+    # Pre-load runtime deps from lib/ and .libs/ so the linker finds them
+    _xgb_dir = _os.path.dirname(_os.path.dirname(__file__))
+    for _d in (lib_dir, _os.path.join(_xgb_dir, ".libs")):
+        if _os.path.isdir(_d):
+            for _dep in sorted(_gl.glob(_os.path.join(_d, "*.so*"))):
+                if "libxgboost" not in _dep:
+                    try:
+                        _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
+                    except Exception:
+                        pass
 
 _xgb_decompress()
 '''
@@ -370,9 +372,9 @@ _xgb_decompress()
                         if pos > 0:
                             content = content[:pos] + _DECOMP + content[pos:]
                         old_line = '    lib_path = [p for p in dll_path if os.path.exists(p) and os.path.isfile(p)]'
-                        new_lines = '''    tmp_so = "/tmp/libxgboost.so"
-    if os.path.exists(tmp_so) and os.path.isfile(tmp_so):
-        return [tmp_so]
+                        new_lines = '''    _lib = os.path.join(curr_path, "lib", "libxgboost.so")
+    if os.path.exists(_lib) and os.path.isfile(_lib):
+        return [_lib]
 ''' + old_line
                         content = content.replace(old_line, new_lines)
                         with open(libpath_py, 'w') as f:

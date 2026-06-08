@@ -83,13 +83,17 @@ def debug_import():
             results[mod_name] = "ok"
         except Exception:
             results[mod_name] = traceback.format_exc()
-    # Dump xgboost lib dir
-    _lib_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "xgb_pkgs", "xgboost", "lib")
+    # Dump xgboost lib dir and .libs dir
+    _xgb_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "xgb_pkgs", "xgboost")
     _lib_files = {}
-    if _os.path.isdir(_lib_dir):
-        for _f in sorted(_os.listdir(_lib_dir)):
-            _fp = _os.path.join(_lib_dir, _f)
-            _lib_files[_f] = _os.path.getsize(_fp) if _os.path.isfile(_fp) else "<dir>"
+    for _sub in ("lib", ".libs"):
+        _d = _os.path.join(_xgb_dir, _sub)
+        _files = {}
+        if _os.path.isdir(_d):
+            for _f in sorted(_os.listdir(_d)):
+                _fp = _os.path.join(_d, _f)
+                _files[_f] = _os.path.getsize(_fp) if _os.path.isfile(_fp) else "<dir>"
+        _lib_files[_sub] = _files
     results["xgb_lib_dir"] = _lib_files
     return _json.dumps({"sys.path": sys.path[:10], "results": results}, indent=2), 200, {'Content-Type': 'application/json'}
 
