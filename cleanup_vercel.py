@@ -340,6 +340,36 @@ def clean():
                             print(f'  Copied libgomp ({os.path.basename(_src)} {_sz/1e6:.1f} MB) to xgb_pkgs/xgboost/lib/')
                         except Exception:
                             pass
+            # Create DT_NEEDED symlinks so libxgboost.so finds its deps by name
+            _xgb_real = os.path.join(lib_dir, 'libxgboost.so')
+            if not os.path.isfile(_xgb_real):
+                _xgb_gz = _xgb_real + '.gz'
+                if os.path.isfile(_xgb_gz):
+                    import gzip as _gz_tmp
+                    _xgb_real = '/tmp/_xgb_dt.so'
+                    try:
+                        with _gz_tmp.open(_xgb_gz, 'rb') as _fi, open(_xgb_real, 'wb') as _fo:
+                            _fo.writelines(_fi)
+                    except Exception:
+                        _xgb_real = None
+                else:
+                    _xgb_real = None
+            if _xgb_real and os.path.isfile(_xgb_real):
+                try:
+                    _out = _sp.run(['readelf', '-d', _xgb_real], capture_output=True, text=True, timeout=15)
+                    for _line in _out.stdout.split('\n'):
+                        if 'NEEDED' in _line and 'lib' in _line and '[' in _line:
+                            _need = _line.split('[')[1].split(']')[0]
+                            _need_path = os.path.join(lib_dir, _need)
+                            if not os.path.exists(_need_path):
+                                _stem = _need.replace('-', ' ').replace('_', ' ').split()[0]
+                                for _existing in sorted(os.listdir(lib_dir)):
+                                    if _existing.startswith(_stem) and '.so' in _existing and not os.path.islink(os.path.join(lib_dir, _existing)):
+                                        os.symlink(_existing, _need_path)
+                                        print(f'  Symlinked {_need} → {_existing}')
+                                        break
+                except Exception:
+                    pass
             # Remove unnecessary .so helpers, keep runtime deps + libgomp
             if os.path.isdir(lib_dir):
                 _keep_prefixes = ('libxgboost', 'libgomp', 'libgcc_s', 'libstdc++')
