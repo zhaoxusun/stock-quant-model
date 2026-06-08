@@ -292,39 +292,6 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
-        # Clean numpy in xgb_pkgs (remove tests, C headers)
-        numpy_pkgs = os.path.join(xgb_pkgs, 'numpy')
-        if os.path.isdir(numpy_pkgs):
-            for root, dirs, files in os.walk(numpy_pkgs):
-                for d in dirs:
-                    if 'test' in d.lower():
-                        saved = rm(os.path.join(root, d))
-                        if saved:
-                            total_saved += saved
-                            print(f'  Removed xgb_pkgs/numpy/.../{d} ({saved/1e6:.1f} MB)')
-                break
-            saved = rm(os.path.join(numpy_pkgs, 'core', 'include'))
-            if saved:
-                total_saved += saved
-                print(f'  Removed xgb_pkgs/numpy/core/include ({saved/1e6:.1f} MB)')
-        # Clean scipy in xgb_pkgs (remove unused modules, tests)
-        scipy_pkgs = os.path.join(xgb_pkgs, 'scipy')
-        if os.path.isdir(scipy_pkgs):
-            scipy_remove = ['cluster', 'constants', 'fft', 'integrate', 'interpolate', 'io',
-                            'ndimage', 'odr', 'optimize', 'signal', 'spatial', 'stats']
-            for d in scipy_remove:
-                saved = rm(os.path.join(scipy_pkgs, d))
-                if saved:
-                    total_saved += saved
-                    print(f'  Removed xgb_pkgs/scipy/{d}/ ({saved/1e6:.1f} MB)')
-            for root, dirs, files in os.walk(scipy_pkgs):
-                for d in dirs:
-                    if 'test' in d.lower():
-                        saved = rm(os.path.join(root, d))
-                        if saved:
-                            total_saved += saved
-                            print(f'  Removed xgb_pkgs/scipy/.../{d} ({saved/1e6:.1f} MB)')
-                break
         xgb_dir = os.path.join(xgb_pkgs, 'xgboost')
         if os.path.isdir(xgb_dir):
             # Remove directories (dask, spark, testing - not needed for inference)
