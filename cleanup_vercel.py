@@ -124,23 +124,12 @@ def clean():
                 total_saved += saved
                 print(f'  Removed {item} ({saved/1e6:.1f} MB)')
 
-    # 5. scipy: keep only sparse + special (xgboost needs scipy.special.softmax) + _lib
-    scipy_dir = os.path.join(sitepkgs, 'scipy')
-    if os.path.isdir(scipy_dir):
-        keep_dirs = {'_lib', 'sparse', 'special', 'linalg'}
-        keep_files = {'__init__.py', '__config__.py', 'version.py', '_distributor_init.py'}
-        for item in os.listdir(scipy_dir):
-            item_path = os.path.join(scipy_dir, item)
-            if os.path.isdir(item_path) and item not in keep_dirs:
-                sz = dir_size(item_path)
-                shutil.rmtree(item_path)
-                total_saved += sz
-                print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
-            elif os.path.isfile(item_path) and item not in keep_files and not item.endswith(('.so', '.pyd')):
-                sz = os.path.getsize(item_path)
-                os.remove(item_path)
-                total_saved += sz
-                print(f'  Removed scipy/{item} ({sz/1e6:.1f} MB)')
+    # 5. scipy: remove entirely (not needed at prediction time)
+    for target in ('scipy', 'scipy.libs'):
+        saved = rm(os.path.join(sitepkgs, target))
+        if saved:
+            total_saved += saved
+            print(f'  Removed {target}/ ({saved/1e6:.1f} MB)')
 
     # 6. sklearn: remove tests
     sklearn_dir = os.path.join(sitepkgs, 'sklearn')
@@ -212,18 +201,7 @@ def clean():
                         total_saved += saved
                         print(f'  Removed xgboost/{d} ({saved/1e6:.1f} MB)')
 
-    # 10. Remove scipy modules not needed for inference
-    scipy_dir = os.path.join(sitepkgs, 'scipy')
-    if os.path.isdir(scipy_dir):
-        scipy_remove = ['cluster', 'constants', 'fft', 'integrate', 'interpolate', 'io',
-                        'ndimage', 'odr', 'optimize', 'signal', 'spatial', 'stats']
-        for d in scipy_remove:
-            saved = rm(os.path.join(scipy_dir, d))
-            if saved:
-                total_saved += saved
-                print(f'  Removed scipy/{d}/ ({saved/1e6:.1f} MB)')
-
-    # 10b. Remove sklearn subpackages not needed for inference
+    # 10. Remove sklearn subpackages not needed for inference
     # Keep: base, utils, metrics, exceptions, preprocessing
     sklearn_dir = os.path.join(sitepkgs, 'sklearn')
     if os.path.isdir(sklearn_dir):
