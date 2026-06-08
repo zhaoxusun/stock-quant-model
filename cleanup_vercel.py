@@ -338,29 +338,33 @@ def clean():
                         with open(libpath_py, 'r') as f:
                             content = f.read()
                         _DECOMP = '''
+import ctypes as _ct, os as _os, glob as _gl
+
 def _xgb_decompress() -> None:
-    so_dir = os.path.join(os.path.dirname(__file__), "lib")
-    so_gz = os.path.join(so_dir, "libxgboost.so.gz")
+    so_dir = _os.path.join(_os.path.dirname(__file__), "lib")
+    so_gz = _os.path.join(so_dir, "libxgboost.so.gz")
     tmp_so = "/tmp/libxgboost.so"
-    if os.path.exists(so_gz) and (
-        not os.path.exists(tmp_so)
-        or os.path.getmtime(tmp_so) < os.path.getmtime(so_gz)
+    if _os.path.exists(so_gz) and (
+        not _os.path.exists(tmp_so)
+        or _os.path.getmtime(tmp_so) < _os.path.getmtime(so_gz)
     ):
         try:
             import gzip as _g
             with _g.open(so_gz, "rb") as fi, open(tmp_so, "wb") as fo:
                 fo.writelines(fi)
-            os.chmod(tmp_so, 0o755)
+            _os.chmod(tmp_so, 0o755)
         except Exception:
             pass
+    # Pre-load runtime deps so libxgboost.so can find them
+    if _os.path.isdir(so_dir):
+        for _dep in sorted(_gl.glob(_os.path.join(so_dir, "*.so*"))):
+            if "libxgboost" not in _dep:
+                try:
+                    _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
+                except Exception:
+                    pass
 
 _xgb_decompress()
-# Ensure linker can find runtime deps (libgomp, libgcc_s, libstdc++)
-import os as _os
-_lib_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "lib")
-_ld = _os.environ.get("LD_LIBRARY_PATH", "")
-if _lib_dir not in _ld:
-    _os.environ["LD_LIBRARY_PATH"] = _lib_dir + (":" + _ld if _ld else "")
 '''
                         pos = content.find('\ndef is_sphinx_build')
                         if pos > 0:
