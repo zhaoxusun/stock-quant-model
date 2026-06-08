@@ -62,6 +62,87 @@ def strip_so(path):
     return saved
 
 
+def fix_elf_alignment(path, page_size=4096):
+    """Fix ELF LOAD segment alignment for .so files (manylinux_2_28 workaround).
+
+    Inserts padding bytes before misaligned LOAD segments so that
+    p_offset % page_size == p_vaddr % page_size — required by AWS Lambda's
+    dynamic linker for manylinux_2_28 wheels built with `-z separate-code`.
+    """
+    import struct
+    fixed = 0
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if '.so' not in f:
+                continue
+            fp = os.path.join(root, f)
+            try:
+                if os.path.islink(fp):
+                    continue
+                with open(fp, 'rb') as fh:
+                    data = bytearray(fh.read())
+                if len(data) < 64 or data[:4] != b'\x7fELF' or data[4] != 2:
+                    continue
+
+                e_phoff = struct.unpack_from('<Q', data, 32)[0]
+                e_phentsize = struct.unpack_from('<H', data, 54)[0]
+                e_phnum = struct.unpack_from('<H', data, 56)[0]
+                e_shoff = struct.unpack_from('<Q', data, 40)[0]
+                e_shentsize = struct.unpack_from('<H', data, 58)[0]
+                e_shnum = struct.unpack_from('<H', data, 60)[0]
+
+                segs = []
+                for i in range(e_phnum):
+                    off = e_phoff + i * e_phentsize
+                    p_type = struct.unpack_from('<I', data, off)[0]
+                    if p_type != 1:
+                        continue
+                    p_offset = struct.unpack_from('<Q', data, off + 8)[0]
+                    p_vaddr = struct.unpack_from('<Q', data, off + 16)[0]
+                    segs.append({'idx': i, 'phdr': off, 'offset': p_offset, 'vaddr': p_vaddr})
+
+                segs.sort(key=lambda s: s['offset'])
+
+                running = 0
+                for s in segs:
+                    cur = s['offset'] + running
+                    vaddr = s['vaddr']
+                    if cur % page_size == vaddr % page_size:
+                        s['fixed_offset'] = cur
+                        continue
+                    adj = (vaddr - cur) % page_size
+                    data[cur:cur] = b'\x00' * adj
+                    running += adj
+                    s['fixed_offset'] = cur + adj
+
+                if running == 0:
+                    continue
+
+                # Update program headers
+                for s in segs:
+                    struct.pack_into('<Q', data, s['phdr'] + 8, s['fixed_offset'])
+
+                # Update section header offset
+                if e_shoff > 0:
+                    new_shoff = e_shoff + running
+                    struct.pack_into('<Q', data, 40, new_shoff)
+                    # Update each section header's sh_offset
+                    for i in range(e_shnum):
+                        sh_off = new_shoff + i * e_shentsize
+                        sh_offset = struct.unpack_from('<Q', data, sh_off + 24)[0]
+                        if sh_offset > 0:
+                            struct.pack_into('<Q', data, sh_off + 24, sh_offset + running)
+
+                with open(fp, 'wb') as fh:
+                    fh.write(data)
+                fixed += 1
+            except Exception:
+                pass
+    if fixed:
+        print(f'  Fixed ELF alignment of {fixed} .so files in {os.path.basename(path)}')
+    return fixed
+
+
 def clean():
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
@@ -266,6 +347,9 @@ def clean():
     # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
     total_saved += strip_so(sitepkgs)
 
+    # 11b. Fix ELF alignment for manylinux_2_28 wheels (page-aligned LOAD segments)
+    fix_elf_alignment(sitepkgs)
+
     # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
     import gzip as _gzip
     for root, dirs, files in os.walk(os.getcwd()):
@@ -292,6 +376,7 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
+        fix_elf_alignment(xgb_pkgs)
         for _stale in ('scipy', 'scipy.libs'):
             _stale_path = os.path.join(xgb_pkgs, _stale)
             saved = rm(_stale_path)
