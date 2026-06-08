@@ -8,8 +8,6 @@ if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
-import numpy as _np
-
 from flask import Flask, jsonify, request, render_template
 
 from flask_cors import CORS
