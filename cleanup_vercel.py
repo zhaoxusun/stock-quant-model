@@ -62,6 +62,24 @@ def strip_so(path):
     return saved
 
 
+def fix_elf_alignment(path):
+    fixed = 0
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if '.so' in f and not os.path.islink(os.path.join(root, f)):
+                fp = os.path.join(root, f)
+                try:
+                    r = subprocess.run(['patchelf', '--page-size', '4096', fp],
+                                       capture_output=True, timeout=30)
+                    if r.returncode == 0:
+                        fixed += 1
+                except Exception:
+                    pass
+    if fixed:
+        print(f'  Fixed ELF alignment of {fixed} .so files in {os.path.basename(path)}')
+    return fixed
+
+
 def clean():
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
@@ -292,6 +310,7 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
+        fix_elf_alignment(xgb_pkgs)
         # Clean numpy in xgb_pkgs (remove tests, C headers)
         numpy_pkgs = os.path.join(xgb_pkgs, 'numpy')
         if os.path.isdir(numpy_pkgs):
