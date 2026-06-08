@@ -1,6 +1,5 @@
 import os
 import sys
-import traceback
 
 _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _PROJECT_ROOT)
@@ -8,6 +7,17 @@ _xgb_pkgs = os.path.join(_PROJECT_ROOT, 'xgb_pkgs')
 if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
+
+# Pre-warm numpy import (forces Vercel deferred install before handler runs)
+import numpy as _np
+
+# Fix numpy ELF alignment on Lambda
+import subprocess as _sp, glob as _gl
+for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
+    try:
+        _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
+    except Exception:
+        pass
 
 from flask import Flask, jsonify, request, render_template
 
@@ -50,21 +60,6 @@ def blog():
 @app.route('/blog/how-to-use')
 def blog_how_to_use():
     return render_template('blog_how_to_use.html')
-
-@app.route('/api/debug/import')
-def debug_import():
-    info = {
-        'python': sys.version,
-        'platform': sys.platform,
-        'path': sys.path,
-    }
-    for mod_name in ('numpy', 'pandas', 'xgboost'):
-        try:
-            __import__(mod_name)
-            info[mod_name] = {'ok': True}
-        except Exception as e:
-            info[mod_name] = {'ok': False, 'error': repr(e), 'traceback': traceback.format_exc()}
-    return jsonify(info)
 
 @app.route('/api/health')
 def health():
