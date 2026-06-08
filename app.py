@@ -8,16 +8,16 @@ if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
 os.environ.setdefault('CACHE_DIR', '/tmp')
 
-# Pre-warm numpy import (forces Vercel deferred install before handler runs)
-import numpy as _np
-
-# Fix numpy ELF alignment on Lambda
+# Fix numpy/scipy ELF alignment BEFORE importing (Vercel runtime wheel may be misaligned)
 import subprocess as _sp, glob as _gl
-for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
+for _fp in _gl.glob('/var/task/_vendor/numpy.libs/*.so') + _gl.glob('/var/task/_vendor/scipy.libs/*.so') + _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/*.libs/*.so'):
     try:
         _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
     except Exception:
         pass
+
+# Pre-warm numpy import (forces Vercel deferred install before handler runs)
+import numpy as _np
 
 from flask import Flask, jsonify, request, render_template
 
