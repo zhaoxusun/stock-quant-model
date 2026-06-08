@@ -340,6 +340,19 @@ def clean():
                             print(f'  Copied libgomp ({os.path.basename(_src)} {_sz/1e6:.1f} MB) to xgb_pkgs/xgboost/lib/')
                         except Exception:
                             pass
+            # Binary-patch DT_NEEDED in libxgboost.so to use SONAME instead of hashed name
+            _libx_so = os.path.join(lib_dir, 'libxgboost.so')
+            if os.path.isfile(_libx_so):
+                with open(_libx_so, 'rb') as _fb:
+                    _xdata = _fb.read()
+                _old_dep = b'libgomp-e985bcbb.so.1.0.0'
+                _cnt = _xdata.count(_old_dep)
+                if _cnt >= 1:
+                    _new_dep = b'libgomp.so.1\0' + b'\0' * (len(_old_dep) - len(b'libgomp.so.1'))
+                    _xdata = _xdata.replace(_old_dep, _new_dep)
+                    with open(_libx_so, 'wb') as _fb:
+                        _fb.write(_xdata)
+                    print(f'  Patched DT_NEEDED libgomp-e985bcbb.so.1.0.0 → libgomp.so.1 ({_cnt} occurrences)')
             # Create DT_NEEDED symlinks so libxgboost.so finds its deps by name
             _xgb_real = os.path.join(lib_dir, 'libxgboost.so')
             if not os.path.isfile(_xgb_real):
@@ -420,43 +433,9 @@ def _xgb_decompress() -> None:
             _os.chmod(tmp_so, 0o755)
         except Exception:
             pass
-    # Copy all .so deps to /tmp/ and set LD_LIBRARY_PATH so DT_NEEDED resolves
+    # Pre-load runtime deps from lib/ before xgboost loads
     if _os.path.isdir(lib_dir):
-        for _dep in _os.listdir(lib_dir):
-            if "libxgboost" not in _dep and ".so" in _dep:
-                _src = _os.path.join(lib_dir, _dep)
-                _dst = "/tmp/" + _dep
-                if _os.path.islink(_src):
-                    _real = _os.path.realpath(_src)
-                    _base = _os.path.basename(_real)
-                    _real_dst = "/tmp/" + _base
-                    if not _os.path.exists(_real_dst):
-                        try:
-                            import shutil
-                            shutil.copy2(_real, _real_dst)
-                        except Exception:
-                            pass
-                    if not _os.path.exists(_dst):
-                        try:
-                            _os.symlink(_base, _dst)
-                        except Exception:
-                            pass
-                elif not _os.path.exists(_dst):
-                    try:
-                        import shutil
-                        shutil.copy2(_src, _dst)
-                    except Exception:
-                        pass
-    _os.environ["LD_LIBRARY_PATH"] = "/tmp:" + _os.environ.get("LD_LIBRARY_PATH", "")
-    # Pre-load libxgboost.so with RTLD_GLOBAL so DT_NEEDED deps are resolved now
-    if _os.path.exists(tmp_so):
-        try:
-            _ct.CDLL(tmp_so, mode=_ct.RTLD_GLOBAL | _ct.RTLD_LAZY)
-        except Exception:
-            pass
-    # Also pre-load any remaining .so deps from /tmp/ as fallback
-    if _os.path.isdir("/tmp"):
-        for _dep in sorted(_gl.glob("/tmp/*.so*")):
+        for _dep in sorted(_gl.glob(_os.path.join(lib_dir, "*.so*"))):
             if "libxgboost" not in _dep:
                 try:
                     _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
