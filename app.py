@@ -31,25 +31,6 @@ if 'testing' not in _np.__dict__:
     sys.modules['numpy.testing'] = _mod
     _np.testing = _mod
 
-# Runtime install missing packages (scipy, requests not in requirements to
-# avoid pulling nvidia-nccl-cu12 via xgboost dep chain)
-_missing = []
-for _pkg in ('scipy', 'requests'):
-    try:
-        __import__(_pkg)
-    except ImportError:
-        _missing.append(_pkg)
-if _missing:
-    import subprocess as _sp_install
-    _tmp_pkgs = '/tmp/runtime_pkgs'
-    _uv_paths = ('/var/task/_uv/uv', '/usr/local/bin/uv', 'uv')
-    _uv_bin = next((p for p in _uv_paths if os.path.exists(p) or p == 'uv'), 'uv')
-    _sp_install.run(
-        [_uv_bin, 'pip', 'install', *_missing, '-t', _tmp_pkgs, '--no-deps'],
-        capture_output=True, timeout=120
-    )
-    sys.path.insert(0, _tmp_pkgs)
-
 from flask import Flask, jsonify, request, render_template
 
 from flask_cors import CORS

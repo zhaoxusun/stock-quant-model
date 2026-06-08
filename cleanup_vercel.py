@@ -128,7 +128,7 @@ def clean():
                 total_saved += saved
                 print(f'  Removed {item} ({saved/1e6:.1f} MB)')
 
-    # 5. scipy: remove if present (requirements may or may not include it)
+    # 5. scipy: remove if present
     for _scipy_item in ('scipy', 'scipy.libs'):
         _scipy_path = os.path.join(sitepkgs, _scipy_item)
         if os.path.isdir(_scipy_path) or os.path.isfile(_scipy_path):
