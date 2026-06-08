@@ -309,30 +309,6 @@ def clean():
                     if saved:
                         total_saved += saved
                         print(f'  Removed xgb_pkgs/{item} ({saved/1e6:.1f} MB)')
-            # Clean akshare: keep only stock-related modules
-            ak_dir = os.path.join(xgb_pkgs, 'akshare')
-            if os.path.isdir(ak_dir):
-                ak_stock_only = {'__init__.py', 'stock', 'stock_', 'setting', 'utils', 'constants'}
-                for item in os.listdir(ak_dir):
-                    item_path = os.path.join(ak_dir, item)
-                    if os.path.isdir(item_path):
-                        keep = False
-                        for prefix in ak_stock_only:
-                            if item == prefix or item.startswith(prefix):
-                                keep = True
-                                break
-                        if not keep:
-                            saved = rm(item_path)
-                            if saved:
-                                total_saved += saved
-                                print(f'  Removed akshare/{item}/ ({saved/1e6:.1f} MB)')
-                for item in os.listdir(ak_dir):
-                    if item.endswith('.py') and item != '__init__.py':
-                        saved = rm(os.path.join(ak_dir, item))
-                        if saved:
-                            total_saved += saved
-                            print(f'  Removed akshare/{item} ({saved/1e6:.1f} MB)')
-
             # Remove bundled helper .so files except libxgboost.so
             lib_dir = os.path.join(xgb_dir, 'lib')
             if os.path.isdir(lib_dir):
@@ -346,6 +322,53 @@ def clean():
                             print(f'  Removed xgb_pkgs/xgboost/lib/{f} ({sz/1e6:.1f} MB)')
                         else:
                             os.remove(fp)
+                # Gzip libxgboost.so (~50% size, decompressed at runtime to /tmp)
+                lib_so = os.path.join(lib_dir, 'libxgboost.so')
+                if os.path.isfile(lib_so) and not os.path.islink(lib_so):
+                    old = os.path.getsize(lib_so)
+                    so_gz = lib_so + '.gz'
+                    import gzip as _gz
+                    with open(lib_so, 'rb') as fi, _gz.open(so_gz, 'wb', 9) as fo:
+                        fo.writelines(fi)
+                    os.remove(lib_so)
+                    new = os.path.getsize(so_gz)
+                    total_saved += old - new
+                    print(f'  Gzipped xgb_pkgs/xgboost/lib/libxgboost.so ({old/1e6:.1f} MB \u2192 {new/1e6:.1f} MB)')
+                    # Patch libpath.py to auto-decompress at runtime
+                    libpath_py = os.path.join(xgb_dir, 'libpath.py')
+                    if os.path.isfile(libpath_py):
+                        with open(libpath_py, 'r') as f:
+                            content = f.read()
+                        _DECOMP = '''
+def _xgb_decompress() -> None:
+    so_gz = os.path.join(os.path.dirname(__file__), "lib", "libxgboost.so.gz")
+    tmp_so = "/tmp/libxgboost.so"
+    if os.path.exists(so_gz) and (
+        not os.path.exists(tmp_so)
+        or os.path.getmtime(tmp_so) < os.path.getmtime(so_gz)
+    ):
+        try:
+            import gzip as _g
+            with _g.open(so_gz, "rb") as fi, open(tmp_so, "wb") as fo:
+                fo.writelines(fi)
+            os.chmod(tmp_so, 0o755)
+        except Exception:
+            pass
+
+_xgb_decompress()
+'''
+                        pos = content.find('\ndef is_sphinx_build')
+                        if pos > 0:
+                            content = content[:pos] + _DECOMP + content[pos:]
+                        old_line = '    lib_path = [p for p in dll_path if os.path.exists(p) and os.path.isfile(p)]'
+                        new_lines = '''    tmp_so = "/tmp/libxgboost.so"
+    if os.path.exists(tmp_so) and os.path.isfile(tmp_so):
+        return [tmp_so]
+''' + old_line
+                        content = content.replace(old_line, new_lines)
+                        with open(libpath_py, 'w') as f:
+                            f.write(content)
+                        print('  Patched xgb_pkgs/xgboost/libpath.py (/tmp decompression)')
         # Remove .pyi stubs, __pycache__, and .pyc from xgb_pkgs
         for root, dirs, files in os.walk(xgb_pkgs):
             for d in list(dirs):
