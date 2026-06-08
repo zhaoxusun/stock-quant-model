@@ -75,7 +75,7 @@ def health():
 
 @app.route('/api/debug/import')
 def debug_import():
-    import sys, traceback, json as _json
+    import sys, traceback, json as _json, os as _os
     results = {}
     for mod_name in ('scipy', 'xgboost'):
         try:
@@ -83,6 +83,14 @@ def debug_import():
             results[mod_name] = "ok"
         except Exception:
             results[mod_name] = traceback.format_exc()
+    # Dump xgboost lib dir
+    _lib_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "xgb_pkgs", "xgboost", "lib")
+    _lib_files = {}
+    if _os.path.isdir(_lib_dir):
+        for _f in sorted(_os.listdir(_lib_dir)):
+            _fp = _os.path.join(_lib_dir, _f)
+            _lib_files[_f] = _os.path.getsize(_fp) if _os.path.isfile(_fp) else "<dir>"
+    results["xgb_lib_dir"] = _lib_files
     return _json.dumps({"sys.path": sys.path[:10], "results": results}, indent=2), 200, {'Content-Type': 'application/json'}
 
 @app.route('/api/predict', methods=['POST'])
