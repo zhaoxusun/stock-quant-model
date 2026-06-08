@@ -474,26 +474,6 @@ _xgb_decompress()
                     total_saved += os.path.getsize(fp)
                     os.remove(fp)
 
-    # Restore numpy.testing (Vercel strips testing dirs, but sklearn's
-    # array_api_compat triggers numpy.__getattr__ → import numpy.testing)
-    _np_test_spec = None
-    try:
-        import importlib.util as _iu
-        _np_test_spec = _iu.find_spec("numpy.testing")
-    except Exception:
-        pass
-    if _np_test_spec and _np_test_spec.origin:
-        _np_test_src = os.path.dirname(_np_test_spec.origin)
-        if os.path.isdir(_np_test_src):
-            try:
-                import numpy as _np, shutil as _shutil
-                _np_test_dst = os.path.join(os.path.dirname(_np.__file__), "testing")
-                if not os.path.isdir(_np_test_dst):
-                    _shutil.copytree(_np_test_src, _np_test_dst)
-                    _sz = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fn in os.walk(_np_test_dst) for f in fn)
-                    print(f'  Copied numpy.testing ({_sz/1e6:.1f} MB) to numpy installation')
-            except Exception as _ex:
-                print(f'  Note: failed to copy numpy.testing: {_ex}')
     print()
     print(f'Total saved: {total_saved / 1e6:.1f} MB')
     total_after = dir_size(sitepkgs)
