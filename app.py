@@ -1,28 +1,27 @@
 import os
 import sys
+import gzip
 
 _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _PROJECT_ROOT)
+
+# 解压 libxgboost.so 到 /tmp
 _xgb_pkgs = os.path.join(_PROJECT_ROOT, 'xgb_pkgs')
 if os.path.isdir(_xgb_pkgs):
     sys.path.insert(0, _xgb_pkgs)
-os.environ.setdefault('CACHE_DIR', '/tmp')
 
-# Pre-warm numpy import (forces Vercel deferred install before handler runs)
-import numpy as _np
+    # 解压 libxgboost.so
+    libxgboost_gz = os.path.join(_xgb_pkgs, 'xgboost', 'lib', 'libxgboost.so.gz')
+    libxgboost_tmp = '/tmp/libxgboost.so'
 
-# Fix numpy ELF alignment on Lambda
-import subprocess as _sp, glob as _gl
-for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
-    try:
-        _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
-    except Exception:
-        pass
+    if os.path.exists(libxgboost_gz) and not os.path.exists(libxgboost_tmp):
+        print('Decompressing libxgboost.so to /tmp...')
+        with gzip.open(libxgboost_gz, 'rb') as src, open(libxgboost_tmp, 'wb') as dst:
+            dst.writelines(src)
+        print('Decompression complete.')
 
 from flask import Flask, jsonify, request, render_template
-
 from flask_cors import CORS
-
 from ml.api_rate_limiter import RateLimitError, resolve_client_ip
 
 app = Flask(__name__)
@@ -33,33 +32,41 @@ CORS(app)
 def favicon():
     return '', 204
 
+
 @app.route('/.well-known/appspecific/com.chrome.devtools.json')
 def chrome_devtools():
     return '', 204
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')
+
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
+
 @app.route('/terms')
 def terms():
     return render_template('terms.html')
+
 
 @app.route('/blog')
 def blog():
     return render_template('blog.html')
 
+
 @app.route('/blog/how-to-use')
 def blog_how_to_use():
     return render_template('blog_how_to_use.html')
+
 
 @app.route('/api/health')
 def health():
@@ -71,6 +78,7 @@ def health():
         except Exception:
             deps[mod_name] = {"ok": False}
     return jsonify(deps)
+
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
@@ -105,6 +113,5 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"  🚀 启动服务: http://127.0.0.1:{port}")
     app.run(host='0.0.0.0', port=port, debug=True)
-
 
 handler = app
