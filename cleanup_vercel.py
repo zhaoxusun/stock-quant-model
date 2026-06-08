@@ -477,9 +477,22 @@ _xgb_decompress()
     print()
     print(f'Total saved: {total_saved / 1e6:.1f} MB')
     total_after = dir_size(sitepkgs)
-    print(f'Total AFTER:  {total_after / 1e6:.1f} MB')
-    if os.path.isdir(xgb_pkgs):
-        print(f'xgb_pkgs AFTER: {dir_size(xgb_pkgs) / 1e6:.1f} MB')
+    print(f'sitepkgs AFTER: {total_after / 1e6:.1f} MB')
+    _xgb_size = dir_size(xgb_pkgs) if os.path.isdir(xgb_pkgs) else 0
+    if _xgb_size:
+        print(f'xgb_pkgs AFTER: {_xgb_size / 1e6:.1f} MB')
+    # Source code (root minus data, cache, vendor dirs)
+    _root_exclude = {'ml/data', 'ml/data_standalone', '.git', sitepkgs, xgb_pkgs}
+    _src_size = 0
+    for _item in os.listdir(_PROJECT_ROOT):
+        _ip = os.path.join(_PROJECT_ROOT, _item)
+        if os.path.isdir(_ip) and _item not in _root_exclude and not _item.startswith('.'):
+            _src_size += dir_size(_ip)
+        elif os.path.isfile(_ip) and _item.endswith('.py'):
+            _src_size += os.path.getsize(_ip)
+    print(f'source code:   {_src_size / 1e6:.1f} MB')
+    _total_bundle = total_after + _xgb_size + _src_size
+    print(f'>>> Bundle size estimate: {_total_bundle / 1e6:.1f} MB <<<')
     print('Cleanup done')
 
 
