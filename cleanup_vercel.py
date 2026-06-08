@@ -306,20 +306,55 @@ def clean():
                             total_saved += saved
                             print(f'  Removed akshare/{item} ({saved/1e6:.1f} MB)')
 
-                # Remove unnecessary .so helpers, but keep runtime deps of libxgboost
-            lib_dir = os.path.join(xgb_dir, 'lib')
-            if os.path.isdir(lib_dir):
-                _keep_prefixes = ('libxgboost', 'libgomp', 'libgcc_s', 'libstdc++')
-                for f in os.listdir(lib_dir):
-                    if '.so' in f and not any(f.startswith(p) for p in _keep_prefixes):
-                        fp = os.path.join(lib_dir, f)
-                        if not os.path.islink(fp):
-                            sz = os.path.getsize(fp)
-                            os.remove(fp)
-                            total_saved += sz
-                            print(f'  Removed xgb_pkgs/xgboost/lib/{f} ({sz/1e6:.1f} MB)')
-                        else:
-                            os.remove(fp)
+                # Bundle system libgomp.so (libxgboost.so needs it at runtime on Lambda)
+                lib_dir = os.path.join(xgb_dir, 'lib')
+                if os.path.isdir(lib_dir):
+                    import shutil as _sh, ctypes.util as _cu, subprocess as _sp
+                    _found_libgomp = []
+                    # Method 1: ctypes find_library
+                    _p = _cu.find_library('gomp')
+                    if _p:
+                        _found_libgomp.append(_p)
+                    # Method 2: ldconfig -p (Linux)
+                    try:
+                        _out = _sp.run(['ldconfig', '-p'], capture_output=True, text=True, timeout=10)
+                        for _line in _out.stdout.split('\n'):
+                            if 'libgomp' in _line and '=>' in _line:
+                                _fp = _line.split('=>')[-1].strip()
+                                if _fp and os.path.isfile(_fp):
+                                    _found_libgomp.append(_fp)
+                    except Exception:
+                        pass
+                    # Method 3: common Linux library paths
+                    for _root in ('/usr/lib64', '/usr/lib', '/usr/lib/x86_64-linux-gnu', '/lib64', '/lib'):
+                        if os.path.isdir(_root):
+                            for _f in sorted(os.listdir(_root)):
+                                if _f.startswith('libgomp') and '.so' in _f:
+                                    _fp = os.path.join(_root, _f)
+                                    if os.path.isfile(_fp) and not os.path.islink(_fp):
+                                        _found_libgomp.append(_fp)
+                    for _src in set(_found_libgomp):
+                        _dst = os.path.join(lib_dir, os.path.basename(_src))
+                        if not os.path.exists(_dst):
+                            try:
+                                _sh.copy2(_src, _dst)
+                                _sz = os.path.getsize(_dst)
+                                print(f'  Copied libgomp ({os.path.basename(_src)} {_sz/1e6:.1f} MB) to xgb_pkgs/xgboost/lib/')
+                            except Exception:
+                                pass
+                # Remove unnecessary .so helpers, keep runtime deps + libgomp
+                if os.path.isdir(lib_dir):
+                    _keep_prefixes = ('libxgboost', 'libgomp', 'libgcc_s', 'libstdc++')
+                    for f in os.listdir(lib_dir):
+                        if '.so' in f and not any(f.startswith(p) for p in _keep_prefixes):
+                            fp = os.path.join(lib_dir, f)
+                            if not os.path.islink(fp):
+                                sz = os.path.getsize(fp)
+                                os.remove(fp)
+                                total_saved += sz
+                                print(f'  Removed xgb_pkgs/xgboost/lib/{f} ({sz/1e6:.1f} MB)')
+                            else:
+                                os.remove(fp)
                 # Gzip libxgboost.so (~50% size, decompressed at runtime to /tmp)
                 lib_so = os.path.join(lib_dir, 'libxgboost.so')
                 if os.path.isfile(lib_so) and not os.path.islink(lib_so):
@@ -332,39 +367,37 @@ def clean():
                     new = os.path.getsize(so_gz)
                     total_saved += old - new
                     print(f'  Gzipped xgb_pkgs/xgboost/lib/libxgboost.so ({old/1e6:.1f} MB \u2192 {new/1e6:.1f} MB)')
-                    # Patch libpath.py to auto-decompress at runtime
+                    # Patch libpath.py to auto-decompress to /tmp and pre-load libgomp
                     libpath_py = os.path.join(xgb_dir, 'libpath.py')
                     if os.path.isfile(libpath_py):
                         with open(libpath_py, 'r') as f:
                             content = f.read()
-                        _DECOMP = '''
+                        _DECOMP = r'''
 import ctypes as _ct, os as _os, glob as _gl
 
 def _xgb_decompress() -> None:
     lib_dir = _os.path.join(_os.path.dirname(__file__), "lib")
     so_gz = _os.path.join(lib_dir, "libxgboost.so.gz")
-    out_so = _os.path.join(lib_dir, "libxgboost.so")
+    tmp_so = "/tmp/libxgboost.so"
     if _os.path.exists(so_gz) and (
-        not _os.path.exists(out_so)
-        or _os.path.getmtime(out_so) < _os.path.getmtime(so_gz)
+        not _os.path.exists(tmp_so)
+        or _os.path.getmtime(tmp_so) < _os.path.getmtime(so_gz)
     ):
         try:
             import gzip as _g
-            with _g.open(so_gz, "rb") as fi, open(out_so, "wb") as fo:
+            with _g.open(so_gz, "rb") as fi, open(tmp_so, "wb") as fo:
                 fo.writelines(fi)
-            _os.chmod(out_so, 0o755)
+            _os.chmod(tmp_so, 0o755)
         except Exception:
             pass
-    # Pre-load runtime deps from lib/ and .libs/ so the linker finds them
-    _xgb_dir = _os.path.dirname(_os.path.dirname(__file__))
-    for _d in (lib_dir, _os.path.join(_xgb_dir, ".libs")):
-        if _os.path.isdir(_d):
-            for _dep in sorted(_gl.glob(_os.path.join(_d, "*.so*"))):
-                if "libxgboost" not in _dep:
-                    try:
-                        _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
-                    except Exception:
-                        pass
+    # Pre-load runtime deps (libgomp, libgcc_s, libstdc++) from lib/ before xgboost loads
+    if _os.path.isdir(lib_dir):
+        for _dep in sorted(_gl.glob(_os.path.join(lib_dir, "*.so*"))):
+            if "libxgboost" not in _dep:
+                try:
+                    _ct.CDLL(_dep, mode=_ct.RTLD_GLOBAL)
+                except Exception:
+                    pass
 
 _xgb_decompress()
 '''
@@ -372,9 +405,9 @@ _xgb_decompress()
                         if pos > 0:
                             content = content[:pos] + _DECOMP + content[pos:]
                         old_line = '    lib_path = [p for p in dll_path if os.path.exists(p) and os.path.isfile(p)]'
-                        new_lines = '''    _lib = os.path.join(curr_path, "lib", "libxgboost.so")
-    if os.path.exists(_lib) and os.path.isfile(_lib):
-        return [_lib]
+                        new_lines = '''    tmp_so = "/tmp/libxgboost.so"
+    if os.path.exists(tmp_so) and os.path.isfile(tmp_so):
+        return [tmp_so]
 ''' + old_line
                         content = content.replace(old_line, new_lines)
                         with open(libpath_py, 'w') as f:
