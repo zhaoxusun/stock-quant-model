@@ -127,7 +127,9 @@ def predict():
             "retry_after": e.retry_after,
         }), 429
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        import traceback as _tb
+        _tb.print_exc()
+        return jsonify({"success": False, "message": str(e), "traceback": _tb.format_exc()}), 500
 
 
 if __name__ == '__main__':
