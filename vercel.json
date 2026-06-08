@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo 'cache-buster: 9671aa7-2' && uv pip install xgboost --no-deps -t xgb_pkgs && python3 cleanup_vercel.py",
+  "buildCommand": "echo 'cache-buster: 9e4a29d-ld' && uv pip install xgboost --no-deps -t xgb_pkgs && python3 cleanup_vercel.py",
   "routes": [
     {
       "src": "/(.*)",
