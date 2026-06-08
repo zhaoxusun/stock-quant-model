@@ -313,26 +313,26 @@ def clean():
                     _found_libgomp = []
                     # Method 1: ctypes find_library
                     _p = _cu.find_library('gomp')
-                    if _p:
-                        _found_libgomp.append(_p)
+                    if _p and os.path.exists(_p):
+                        _found_libgomp.append(os.path.realpath(_p))
                     # Method 2: ldconfig -p (Linux)
                     try:
                         _out = _sp.run(['ldconfig', '-p'], capture_output=True, text=True, timeout=10)
                         for _line in _out.stdout.split('\n'):
                             if 'libgomp' in _line and '=>' in _line:
                                 _fp = _line.split('=>')[-1].strip()
-                                if _fp and os.path.isfile(_fp):
-                                    _found_libgomp.append(_fp)
+                                if _fp and os.path.exists(_fp):
+                                    _found_libgomp.append(os.path.realpath(_fp))
                     except Exception:
                         pass
-                    # Method 3: common Linux library paths
+                    # Method 3: common Linux library paths (including symlink targets)
                     for _root in ('/usr/lib64', '/usr/lib', '/usr/lib/x86_64-linux-gnu', '/lib64', '/lib'):
                         if os.path.isdir(_root):
                             for _f in sorted(os.listdir(_root)):
                                 if _f.startswith('libgomp') and '.so' in _f:
                                     _fp = os.path.join(_root, _f)
-                                    if os.path.isfile(_fp) and not os.path.islink(_fp):
-                                        _found_libgomp.append(_fp)
+                                    if os.path.isfile(_fp):
+                                        _found_libgomp.append(os.path.realpath(_fp))
                     for _src in set(_found_libgomp):
                         _dst = os.path.join(lib_dir, os.path.basename(_src))
                         if not os.path.exists(_dst):
@@ -345,7 +345,7 @@ def clean():
                 # Remove unnecessary .so helpers, keep runtime deps + libgomp
                 if os.path.isdir(lib_dir):
                     _keep_prefixes = ('libxgboost', 'libgomp', 'libgcc_s', 'libstdc++')
-                    for f in os.listdir(lib_dir):
+                    for f in list(os.listdir(lib_dir)):
                         if '.so' in f and not any(f.startswith(p) for p in _keep_prefixes):
                             fp = os.path.join(lib_dir, f)
                             if not os.path.islink(fp):
@@ -355,24 +355,26 @@ def clean():
                                 print(f'  Removed xgb_pkgs/xgboost/lib/{f} ({sz/1e6:.1f} MB)')
                             else:
                                 os.remove(fp)
-                # Gzip libxgboost.so (~50% size, decompressed at runtime to /tmp)
+                # Gzip libxgboost.so or re-gzip if stale .so exists alongside .gz
                 lib_so = os.path.join(lib_dir, 'libxgboost.so')
+                lib_gz = lib_so + '.gz'
                 if os.path.isfile(lib_so) and not os.path.islink(lib_so):
                     old = os.path.getsize(lib_so)
                     import gzip as _gz
-                    so_gz = lib_so + '.gz'
-                    with open(lib_so, 'rb') as fi, _gz.open(so_gz, 'wb', 9) as fo:
+                    with open(lib_so, 'rb') as fi, _gz.open(lib_gz, 'wb', 9) as fo:
                         fo.writelines(fi)
                     os.remove(lib_so)
-                    new = os.path.getsize(so_gz)
+                    new = os.path.getsize(lib_gz)
                     total_saved += old - new
                     print(f'  Gzipped xgb_pkgs/xgboost/lib/libxgboost.so ({old/1e6:.1f} MB \u2192 {new/1e6:.1f} MB)')
-                    # Patch libpath.py to auto-decompress to /tmp and pre-load libgomp
-                    libpath_py = os.path.join(xgb_dir, 'libpath.py')
-                    if os.path.isfile(libpath_py):
-                        with open(libpath_py, 'r') as f:
-                            content = f.read()
-                        _DECOMP = r'''
+                elif os.path.isfile(lib_gz):
+                    print(f'  libxgboost.so.gz exists ({os.path.getsize(lib_gz)/1e6:.1f} MB), skipping gzip')
+                # Patch libpath.py (always, even if cached build already has .gz)
+                libpath_py = os.path.join(xgb_dir, 'libpath.py')
+                if os.path.isfile(libpath_py):
+                    with open(libpath_py, 'r') as f:
+                        content = f.read()
+                    _DECOMP = r'''
 import ctypes as _ct, os as _os, glob as _gl
 
 def _xgb_decompress() -> None:
@@ -401,6 +403,8 @@ def _xgb_decompress() -> None:
 
 _xgb_decompress()
 '''
+                    has_patch = '_xgb_decompress' in content
+                    if not has_patch:
                         pos = content.find('\ndef is_sphinx_build')
                         if pos > 0:
                             content = content[:pos] + _DECOMP + content[pos:]
@@ -409,10 +413,13 @@ _xgb_decompress()
     if os.path.exists(tmp_so) and os.path.isfile(tmp_so):
         return [tmp_so]
 ''' + old_line
-                        content = content.replace(old_line, new_lines)
+                        if old_line in content and new_lines.split('\n')[0] != old_line:
+                            content = content.replace(old_line, new_lines)
                         with open(libpath_py, 'w') as f:
                             f.write(content)
                         print('  Patched xgb_pkgs/xgboost/libpath.py (/tmp decompression)')
+                    else:
+                        print('  libpath.py already patched (cached)')
         # Remove .pyi stubs, __pycache__, and .pyc from xgb_pkgs
         for root, dirs, files in os.walk(xgb_pkgs):
             for d in list(dirs):
