@@ -68,6 +68,9 @@ def clean():
         print('Cannot find site-packages, skipping cleanup')
         return
 
+    _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+    xgb_pkgs = os.path.join(_PROJECT_ROOT, 'xgb_pkgs')
+
     print(f'CLEANUP_VERCEL v2 (libgomp fix - 9671aa7)')
     print(f'Site-packages: {sitepkgs}')
     total_before = dir_size(sitepkgs)
