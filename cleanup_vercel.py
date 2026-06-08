@@ -124,12 +124,7 @@ def clean():
                 total_saved += saved
                 print(f'  Removed {item} ({saved/1e6:.1f} MB)')
 
-    # 5. scipy: remove entirely (not needed at prediction time)
-    for target in ('scipy', 'scipy.libs'):
-        saved = rm(os.path.join(sitepkgs, target))
-        if saved:
-            total_saved += saved
-            print(f'  Removed {target}/ ({saved/1e6:.1f} MB)')
+    # 5. scipy: keep (xgboost's core.py imports scipy.sparse at module level)
 
     # 6. sklearn: remove tests
     sklearn_dir = os.path.join(sitepkgs, 'sklearn')
