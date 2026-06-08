@@ -292,8 +292,23 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
-        # Remove stale numpy/scipy from cached xgb_pkgs (they belong in site-packages)
-        for _stale in ('numpy', 'scipy', 'numpy.libs', 'scipy.libs'):
+        # Clean numpy in xgb_pkgs (remove tests, C headers)
+        numpy_pkgs = os.path.join(xgb_pkgs, 'numpy')
+        if os.path.isdir(numpy_pkgs):
+            for root, dirs, files in os.walk(numpy_pkgs):
+                for d in dirs:
+                    if 'test' in d.lower():
+                        saved = rm(os.path.join(root, d))
+                        if saved:
+                            total_saved += saved
+                            print(f'  Removed xgb_pkgs/numpy/.../{d} ({saved/1e6:.1f} MB)')
+                break
+            saved = rm(os.path.join(numpy_pkgs, 'core', 'include'))
+            if saved:
+                total_saved += saved
+                print(f'  Removed xgb_pkgs/numpy/core/include ({saved/1e6:.1f} MB)')
+        # Remove stale scipy from cached xgb_pkgs (not needed, deferred at runtime)
+        for _stale in ('scipy', 'scipy.libs'):
             _stale_path = os.path.join(xgb_pkgs, _stale)
             saved = rm(_stale_path)
             if saved:
