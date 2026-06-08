@@ -7,16 +7,17 @@ import subprocess
 
 
 def get_site_packages():
+    # Use sys.path first — during build this includes the venv's site-packages
+    paths = [p for p in sys.path if 'site-packages' in p]
+    if paths:
+        return paths[0]
     try:
         return site.getsitepackages()[0]
     except Exception:
-        paths = [p for p in sys.path if 'site-packages' in p]
-        if paths:
-            return paths[0]
         candidates = glob.glob('.vercel/**/site-packages', recursive=True)
         if candidates:
             return candidates[0]
-        return None
+    return None
 
 
 def dir_size(path):
@@ -72,7 +73,10 @@ def fix_elf_alignment(path, page_size=4096):
     import struct
     fixed = 0
     fixed_real = set()
+    so_count = 0
     for root, dirs, files in os.walk(path):
+        if '.git' in dirs:
+            dirs.remove('.git')
         for f in files:
             if '.so' not in f:
                 continue
@@ -141,8 +145,13 @@ def fix_elf_alignment(path, page_size=4096):
                     fh.write(data)
                 fixed += 1
                 fixed_real.add(os.path.realpath(fp))
+                if fixed <= 3 or fixed % 10 == 0:
+                    sz = len(data)
+                    print(f'    Fixed: {os.path.relpath(fp)} ({sz/1e6:.1f} MB)')
             except Exception:
                 pass
+            so_count += 1
+    print(f'  Scanned {so_count} .so files in {os.path.basename(path)}, fixed {fixed}')
     if fixed:
         print(f'  Fixed ELF alignment of {fixed} .so files in {os.path.basename(path)}')
     return fixed
@@ -150,7 +159,10 @@ def fix_elf_alignment(path, page_size=4096):
 
 def clean():
     # Fix ELF alignment first — scan CWD regardless of sitepkgs location
-    fix_elf_alignment(os.getcwd())
+    try:
+        fix_elf_alignment(os.getcwd())
+    except Exception as e:
+        print(f'  ELF alignment fixer error (non-fatal): {e}')
 
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
