@@ -149,6 +149,9 @@ def fix_elf_alignment(path, page_size=4096):
 
 
 def clean():
+    # Fix ELF alignment first — scan CWD regardless of sitepkgs location
+    fix_elf_alignment(os.getcwd())
+
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
         print('Cannot find site-packages, skipping cleanup')
@@ -354,10 +357,6 @@ def clean():
 
     # 11. Strip .so files in site-packages (debug symbols, 30-50% savings)
     total_saved += strip_so(sitepkgs)
-
-    # 11b. Fix ELF alignment for manylinux_2_28 wheels (page-aligned LOAD segments)
-    # Scan from CWD to catch _vendor/ and any other dirs
-    fix_elf_alignment(os.getcwd())
 
     # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
     import gzip as _gzip
