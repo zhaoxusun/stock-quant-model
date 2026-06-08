@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _PROJECT_ROOT)
@@ -49,6 +50,21 @@ def blog():
 @app.route('/blog/how-to-use')
 def blog_how_to_use():
     return render_template('blog_how_to_use.html')
+
+@app.route('/api/debug/import')
+def debug_import():
+    info = {
+        'python': sys.version,
+        'platform': sys.platform,
+        'path': sys.path,
+    }
+    for mod_name in ('numpy', 'pandas', 'xgboost'):
+        try:
+            __import__(mod_name)
+            info[mod_name] = {'ok': True}
+        except Exception as e:
+            info[mod_name] = {'ok': False, 'error': repr(e), 'traceback': traceback.format_exc()}
+    return jsonify(info)
 
 @app.route('/api/health')
 def health():
