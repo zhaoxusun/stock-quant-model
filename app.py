@@ -11,13 +11,14 @@ os.environ.setdefault('CACHE_DIR', '/tmp')
 # Pre-warm numpy import (forces Vercel deferred install before handler runs)
 import numpy as _np
 
-# Fix numpy ELF alignment on Lambda
+# Fix numpy ELF alignment on Lambda (strip bundled openblas .so)
 import subprocess as _sp, glob as _gl
-for _fp in _gl.glob('/tmp/_vc_deps/lib/python*/site-packages/numpy.libs/*.so'):
-    try:
-        _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
-    except Exception:
-        pass
+for _dir in ('/var/task/_vendor', '/tmp/_vc_deps'):
+    for _fp in _gl.glob(f'{_dir}/lib/python*/site-packages/numpy.libs/*.so'):
+        try:
+            _sp.run(['strip', '--strip-all', _fp], capture_output=True, timeout=10)
+        except Exception:
+            pass
 
 from flask import Flask, jsonify, request, render_template
 
