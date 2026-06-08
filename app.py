@@ -21,13 +21,15 @@ for _dir in ('/var/task/_vendor', '/tmp/_vc_deps'):
             pass
 
 # numpy.testing stub: sklearn's array_api_compat triggers numpy.__getattr__
-# → import numpy.testing, but Vercel strips testing dirs from deployment
+# → import numpy.testing, but Vercel strips testing dirs from deployment.
+# Must set directly on numpy module to bypass __getattr__ recursion.
 import types as _types
-if 'numpy.testing' not in sys.modules:
+if 'testing' not in _np.__dict__:
     _mod = _types.ModuleType('numpy.testing')
     _mod.__path__ = []
     _mod.__file__ = os.path.join(os.path.dirname(_np.__file__), 'testing', '__init__.py')
     sys.modules['numpy.testing'] = _mod
+    _np.testing = _mod
 
 from flask import Flask, jsonify, request, render_template
 
