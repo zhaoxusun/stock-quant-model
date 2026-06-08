@@ -68,6 +68,7 @@ def clean():
         print('Cannot find site-packages, skipping cleanup')
         return
 
+    print(f'CLEANUP_VERCEL v2 (libgomp fix - 9671aa7)')
     print(f'Site-packages: {sitepkgs}')
     total_before = dir_size(sitepkgs)
     print(f'Total BEFORE: {total_before / 1e6:.1f} MB\n')
