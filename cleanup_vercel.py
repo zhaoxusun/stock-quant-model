@@ -62,6 +62,38 @@ def strip_so(path):
     return saved
 
 
+def fix_elf_alignment(path):
+    """Fix ELF LOAD segment alignment for Lambda compatibility using patchelf."""
+    try:
+        r = subprocess.run(['apt-get', 'update', '-qq'], capture_output=True, timeout=120)
+        if r.returncode != 0:
+            return 0
+        r = subprocess.run(['apt-get', 'install', '-y', '-qq', 'patchelf'], capture_output=True, timeout=120)
+        if r.returncode != 0:
+            return 0
+    except Exception:
+        print('  Failed to install patchelf, skipping ELF alignment fix')
+        return 0
+
+    fixed = 0
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if '.so' in f and not os.path.islink(os.path.join(root, f)):
+                fp = os.path.join(root, f)
+                try:
+                    result = subprocess.run(
+                        ['patchelf', '--page-size', '4096', fp],
+                        capture_output=True, timeout=30
+                    )
+                    if result.returncode == 0:
+                        fixed += 1
+                except Exception:
+                    pass
+    if fixed:
+        print(f'  Fixed ELF alignment of {fixed} .so files in {os.path.basename(path)}')
+    return fixed
+
+
 def clean():
     sitepkgs = get_site_packages()
     if not sitepkgs or not os.path.isdir(sitepkgs):
@@ -101,9 +133,9 @@ def clean():
         total_saved += saved
         print(f'  Removed pip ({saved/1e6:.1f} MB)')
 
-    # 3. Remove dist-info for akshare/baostock/numpy/scipy (prevents Vercel from deferring them)
+    # 3. Remove dist-info for akshare/baostock (prevents Vercel from deferring them)
     for item in os.listdir(sitepkgs):
-        if item.endswith('.dist-info') and item.startswith(('akshare', 'baostock', 'numpy', 'scipy')):
+        if item.endswith('.dist-info') and item.startswith(('akshare', 'baostock')):
             saved = rm(os.path.join(sitepkgs, item))
             if saved:
                 total_saved += saved
@@ -292,6 +324,7 @@ def clean():
     xgb_pkgs = os.path.join(os.getcwd(), 'xgb_pkgs')
     if os.path.isdir(xgb_pkgs):
         total_saved += strip_so(xgb_pkgs)
+        fix_elf_alignment(xgb_pkgs)
         # Clean numpy in xgb_pkgs (remove tests, C headers)
         numpy_pkgs = os.path.join(xgb_pkgs, 'numpy')
         if os.path.isdir(numpy_pkgs):
