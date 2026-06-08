@@ -306,11 +306,12 @@ def clean():
                             total_saved += saved
                             print(f'  Removed akshare/{item} ({saved/1e6:.1f} MB)')
 
-            # Remove bundled helper .so files except libxgboost.so
+                # Remove unnecessary .so helpers, but keep runtime deps of libxgboost
             lib_dir = os.path.join(xgb_dir, 'lib')
             if os.path.isdir(lib_dir):
+                _keep_prefixes = ('libxgboost', 'libgomp', 'libgcc_s', 'libstdc++')
                 for f in os.listdir(lib_dir):
-                    if f != 'libxgboost.so' and ('.so' in f or f.endswith('.so')):
+                    if '.so' in f and not any(f.startswith(p) for p in _keep_prefixes):
                         fp = os.path.join(lib_dir, f)
                         if not os.path.islink(fp):
                             sz = os.path.getsize(fp)
@@ -338,7 +339,8 @@ def clean():
                             content = f.read()
                         _DECOMP = '''
 def _xgb_decompress() -> None:
-    so_gz = os.path.join(os.path.dirname(__file__), "lib", "libxgboost.so.gz")
+    so_dir = os.path.join(os.path.dirname(__file__), "lib")
+    so_gz = os.path.join(so_dir, "libxgboost.so.gz")
     tmp_so = "/tmp/libxgboost.so"
     if os.path.exists(so_gz) and (
         not os.path.exists(tmp_so)
@@ -353,6 +355,12 @@ def _xgb_decompress() -> None:
             pass
 
 _xgb_decompress()
+# Ensure linker can find runtime deps (libgomp, libgcc_s, libstdc++)
+import os as _os
+_lib_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "lib")
+_ld = _os.environ.get("LD_LIBRARY_PATH", "")
+if _lib_dir not in _ld:
+    _os.environ["LD_LIBRARY_PATH"] = _lib_dir + (":" + _ld if _ld else "")
 '''
                         pos = content.find('\ndef is_sphinx_build')
                         if pos > 0:
