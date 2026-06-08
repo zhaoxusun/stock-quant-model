@@ -356,7 +356,8 @@ def clean():
     total_saved += strip_so(sitepkgs)
 
     # 11b. Fix ELF alignment for manylinux_2_28 wheels (page-aligned LOAD segments)
-    fix_elf_alignment(sitepkgs)
+    # Scan from CWD to catch _vendor/ and any other dirs
+    fix_elf_alignment(os.getcwd())
 
     # 12. Gzip model.pkl files (8-10x smaller, decompressed at runtime)
     import gzip as _gzip
