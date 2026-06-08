@@ -65,12 +65,16 @@ def blog_how_to_use():
 @app.route('/api/health')
 def health():
     deps = {}
-    for mod_name in ('numpy', 'pandas', 'xgboost'):
+    for mod_name in ('numpy', 'pandas', 'xgboost', 'scipy'):
         try:
-            __import__(mod_name)
-            deps[mod_name] = {"ok": True}
-        except Exception:
-            deps[mod_name] = {"ok": False}
+            mod = __import__(mod_name)
+            info = {"ok": True, "version": getattr(mod, "__version__", "?")}
+            if mod_name == 'numpy':
+                import importlib.util as _iu
+                info["has_testing"] = _iu.find_spec("numpy.testing") is not None
+            deps[mod_name] = info
+        except Exception as e:
+            deps[mod_name] = {"ok": False, "error": str(e)}
     return jsonify(deps)
 
 @app.route('/api/debug/import')
