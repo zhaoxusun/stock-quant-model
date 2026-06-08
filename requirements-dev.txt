@@ -1,8 +1,0 @@
-akshare
-baostock
-numpy
-pandas
-scikit-learn
-flask
-flask-cors
-xgboost

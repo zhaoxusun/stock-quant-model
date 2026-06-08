@@ -31,6 +31,22 @@ if 'testing' not in _np.__dict__:
     sys.modules['numpy.testing'] = _mod
     _np.testing = _mod
 
+# Runtime install missing packages (scipy, requests not in requirements-dev)
+_missing = []
+for _pkg in ('scipy', 'requests'):
+    try:
+        __import__(_pkg)
+    except ImportError:
+        _missing.append(_pkg)
+if _missing:
+    import subprocess as _sp_install
+    _tmp_pkgs = '/tmp/runtime_pkgs'
+    _sp_install.run(
+        ['pip3', 'install', *_missing, '-t', _tmp_pkgs, '--no-deps'],
+        capture_output=True, timeout=120
+    )
+    sys.path.insert(0, _tmp_pkgs)
+
 from flask import Flask, jsonify, request, render_template
 
 from flask_cors import CORS
